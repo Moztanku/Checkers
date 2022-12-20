@@ -1,10 +1,7 @@
 package com.tp.CheckersVariants.Polish;
 
-import java.util.ArrayList;
-
 import com.tp.Model.Board;
 import com.tp.Model.Player;
-import com.tp.Model.Move;
 import com.tp.Model.Piece;
 
 public class PolishBoard extends Board {

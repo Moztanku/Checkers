@@ -1,7 +1,7 @@
 package com.tp.Model;
 
 public class Move {
-    Move(Piece before, Piece after, boolean isJump, Piece[] jumped){
+    public Move(Piece before, Piece after, boolean isJump, Piece[] jumped){
         this.before = before;
         this.after = after;
 
@@ -9,8 +9,8 @@ public class Move {
         this.jumped = jumped;
     }
 
-    Move(Piece before, Piece after){
-        this(before, after, false, null);
+    public Move(Piece before, Piece after){
+        this(before, after, false, new Piece[0]);
     }
 
     public Piece before;

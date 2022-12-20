@@ -21,21 +21,30 @@ public abstract class Board {
         return null;
     }
 
+    public ArrayList<Piece> getPieces() {
+        return this.pieces;
+    }
+    public ArrayList<Piece> getPieces(Player color) {
+        ArrayList<Piece> pieces = new ArrayList<Piece>();
+        for(Piece piece : this.pieces){
+            if(piece.color == color){
+                pieces.add(piece);
+            }
+        }
+        return pieces;
+    }
+
     abstract public int getSize();
 
     public void makeMove(Move move) {
-        removePiece(move.before);
+        this.pieces.remove(move.before);
         addPiece(move.after);
 
         if(move.isJump){
             for(Piece piece : move.jumped){
-                removePiece(piece);
+                this.pieces.remove(piece);
             }
         }
-    }
-
-    public void removePiece(Piece piece) {
-        this.pieces.remove(piece);
     }
 
     public int getPieceCount(Player color) {

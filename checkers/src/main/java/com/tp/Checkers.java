@@ -12,9 +12,9 @@ import com.tp.Model.Move;
  * Class representing a game of checkers, the M of MVC model
  */
 public class Checkers {
-    Board board;
-    MovementChecker movement;
-    IGameState state;
+    private Board board;
+    private MovementChecker movement;
+    private IGameState state;
 
     public Checkers(ICheckersFactory factory) {
         board = factory.createBoard();
@@ -23,6 +23,9 @@ public class Checkers {
     }
 
     public void move(Move move, Player player) throws InvalidMoveException {
+        if(move == null || move.before == null || move.after == null){
+            throw new InvalidMoveException("Move cannot be null");
+        }
         if(move.before.color != player || move.after.color != player){
             throw new InvalidMoveException("You can only move your own pieces");
         }
@@ -37,13 +40,16 @@ public class Checkers {
             state = new GameEnded(this, Player.WHITE);
         }
 
-        state.nextTurn();   //  TODO: check if game is over
+        state.nextTurn();
     }
 
     public Board getBoard() {
         return board;
     }
 
+    public IGameState getState() {
+        return state;
+    }
     public void setState(IGameState state) {
         this.state = state;
     }
