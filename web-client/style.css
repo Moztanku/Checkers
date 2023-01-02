@@ -1,0 +1,29 @@
+table{
+    position: relative;
+    margin: auto;
+    table-layout: auto;
+    min-width: 50vw;
+    min-height: 50vw;
+}
+
+td[color="white"]{
+    background-color: antiquewhite;
+}
+
+td[color="black"]{
+    background-color: maroon;
+}
+
+td[piece="WHITE"]{
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 1) 44%, rgba(44, 28, 15, 1) 45%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
+    background-size: auto;
+    background-position: left top;
+    background-repeat: repeat;
+}
+
+td[piece="BLACK"]{
+    background-image: radial-gradient(circle, rgba(34, 34, 34, 1) 44%, rgba(44, 28, 15, 1) 47%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
+    background-size: auto;
+    background-position: left top;
+    background-repeat: repeat;
+}
