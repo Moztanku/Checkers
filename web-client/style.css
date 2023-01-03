@@ -1,3 +1,7 @@
+html{
+    overflow: hidden;
+}
+
 div#startWindow{
     position: relative;
     width: 76vw;
@@ -15,13 +19,13 @@ div#startWindow{
 div#startWindow > label,input,select{
     border-width: 1px;
     border-radius: 12px;
-    font-size: 2vw;
+    font-size: 3vh;
 }
 div#startWindow > button{
-    font-size: 2vw;
+    font-size: 3vh;
 }
 div#startWindow > h1{
-    font-size: 8vw;
+    font-size: 12vh;
     margin: 0;
     padding: 0;
 }
@@ -65,9 +69,39 @@ td[piece="BLACK"]{
     background-repeat: repeat;
 }
 
+div#log{
+    position: absolute;
+    background-color: #24292E;
+    color: #FAFBFC;
+    width: 100%;
+    height: 14vh;
+    padding-top: 1vh;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+}
 
+div#log > p{
+    margin: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 4px;
+    font-size: 12px;
+    border: 
+}
 
+div#log > p:nth-child(odd){
+    background-color: #2F363D;
+}
 
+div#log > div#hide{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background-color: #959DA5;
+}
 
 /* https://getcssscan.com/ */
 

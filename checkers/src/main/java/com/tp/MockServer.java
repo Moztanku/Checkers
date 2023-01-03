@@ -1,22 +1,13 @@
 package com.tp;
 
-import java.io.Console;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.lang.Thread.State;
-import java.lang.reflect.Array;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.http.WebSocket;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Scanner;
-import java.util.Vector;
 import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -71,9 +62,10 @@ class ServerThread implements Runnable {
 
             System.out.println("Handshake done");
 
-            int b = 0;
+            sendResponse(out, "You are connected to server as " + player.toString());
+
             byte[] bytes = new byte[1024];
-            while((b = in.read(bytes,0,bytes.length)) != -1){
+            while((in.read(bytes,0,bytes.length)) != -1){
                 String request = decode(bytes);
                 handleRequest(request, out);
             }
@@ -88,7 +80,7 @@ class ServerThread implements Runnable {
     }
 
     private String decode(byte[] bytes) {
-        int b1 = bytes[0] & 0xFF;
+        int b1 = bytes[0] & 0xFF;   // TODO: multiple frames support
         int b2 = bytes[1] & 0xFF;
 
         int len = b2 & 127;
@@ -118,11 +110,37 @@ class ServerThread implements Runnable {
         return new String(data);
     }
 
-    private void handleRequest(String request, OutputStream writer) {
+    private void handleRequest(String request, OutputStream output) {
         Gson gson = new GsonBuilder().create();
-        JsonObject json = gson.fromJson(request, JsonObject.class);
+        JsonObject json = null;
+        try{
+            json = gson.fromJson(request, JsonObject.class);
+            System.out.println(json);
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+            return;
+        }
 
-        System.out.println("Request: " + json.get("RequestType"));
+        var requestType = json.get("RequestType").getAsString();
+        var content = json.get("Content").getAsJsonObject();
+
+        if(requestType == null || content == null){
+            System.out.println("Error: RequestType or Content is null");
+            return;
+        } else if (requestType.equals("GetColor")){
+            JsonObject responseJson = new JsonObject();
+            responseJson.addProperty("RequestType", requestType);
+            
+            JsonObject contentJson = new JsonObject();
+            contentJson.addProperty("Color", player.toString());
+
+            responseJson.add("Content", contentJson);
+            try{
+                sendResponse(output, responseJson.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private boolean websocketHandshake(Scanner in, OutputStream out) throws IOException {
@@ -152,6 +170,33 @@ class ServerThread implements Runnable {
     }
 
     private void sendResponse(OutputStream out, String response) throws IOException {
-        out.write(response.getBytes("UTF-8"));
+        byte[] bytes = response.getBytes("UTF-8");
+        byte[] frame = null;
+
+        int len = bytes.length;
+
+        if(len <= 125){ // 7 bits length message
+            frame = new byte[2];
+
+            frame[1] = (byte) len;
+        } else if(len >= 126 && len <= 65535){ // 2 bytes length message
+            frame = new byte[4];
+
+            frame[1] = (byte) 126;
+            frame[2] = (byte) ((len >> 8) & 0xFF);
+            frame[3] = (byte) (len & 0xFF);
+        } else { // 8 bytes length message
+            frame = new byte[10];
+
+            frame[1] = (byte) 127; 
+            frame[2] = (byte) ((len >> 56) & 0xFF); frame[3] = (byte) ((len >> 48) & 0xFF);
+            frame[4] = (byte) ((len >> 40) & 0xFF); frame[5] = (byte) ((len >> 32) & 0xFF);
+            frame[6] = (byte) ((len >> 24) & 0xFF); frame[7] = (byte) ((len >> 16) & 0xFF);
+            frame[8] = (byte) ((len >> 8) & 0xFF);  frame[9] = (byte) (len & 0xFF);
+        }
+        frame[0] = (byte) 129;
+
+        out.write(frame);
+        out.write(bytes);
     }
 }

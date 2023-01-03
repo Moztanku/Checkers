@@ -56,42 +56,29 @@ namespace connection{
     export let serverUrl = "ws://localhost:8080";
     let socket : WebSocket;
 
-    export function ConnectToServer(){
+    export function ConnectToServer(){ // TODO
         socket = new WebSocket(serverUrl);
 
-        socket.onopen = (event: Event) => {
+        socket.onopen = (event: Event) => { // TODO
             console.log("Connected to server");
 
-            // SendRequest(JsonParser.Request.GetColor);
-            // socket.send(JsonParser.Request.GetColor);
-            // socket.onmessage = (event: MessageEvent) => {
-            //     console.log("Message from server: " + event.data);
-            //     game.PlayerColor = JsonParser.getColor(event.data);
 
-            //     socket.send(JsonParser.Request.GetBoard);
-            //     socket.onmessage = (event: MessageEvent) => {
-            //         console.log("Message from server: " + event.data);
-            //         game.board = JsonParser.getBoard(event.data);
-            //     }
-            // };
-            // socket.send(JsonParser.)
-            // socket.send()
         }
 
-        socket.onmessage = event => {
+        socket.onmessage = event => {   // TODO
             console.log(event.data);
         }
 
-        socket.onerror = event => {
+        socket.onerror = event => { // TODO
             console.log("Error: " + event);
         }
 
-        socket.onclose = event => {
+        socket.onclose = event => { // TODO
             console.log("Connection closed");
         }
     }
 
-    export function SendRequest(request: string){
+    export function SendRequest(request: string){   // TODO
         socket.send(request);
     }
 
@@ -315,6 +302,19 @@ namespace html{
         const tr = table.rows[y];
         const ce = tr.cells[x];
         ce.setAttribute('state',state);
+    }
+
+    export function log(text: string, properties: string = ""){ // Log text to div with id="log"
+        const log = document.getElementById('log');
+        if(log === null){
+            return;
+        }
+
+        const p = document.createElement('p');
+        p.innerText = text;
+        if(properties !== "")
+            p.setAttribute('style',properties);
+        log.prepend(p);
     }
 }
 
