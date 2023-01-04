@@ -61,12 +61,49 @@ namespace connection{
 
         socket.onopen = (event: Event) => { // TODO
             console.log("Connected to server");
+            html.log("Connected to server");
 
-
+            const request_1 : any = {
+                RequestType: "SetVariant",
+                Content: {
+                    Variant: html.settings.get("variant")
+                }
+            }
+            const request_2 : any = {
+                RequestType: "SetColor",
+                Content: {
+                    Color: html.settings.get("color")
+                }
+            }
+            SendRequest(JSON.stringify(request_1));
+            SendRequest(JSON.stringify(request_2));
         }
 
         socket.onmessage = event => {   // TODO
-            console.log(event.data);
+            const json = JSON.parse(event.data);
+            console.log("Received: " + json);
+
+            const requestType = json.RequestType;
+            const content = json.Content;
+
+            switch(requestType){
+                case "Init":
+                    game.start(
+                        content.Variant,
+                        content.Color
+                    );
+                    SendRequest(
+                        JsonParser.Request.GetBoard
+                    );
+                    break;
+                case "GetBoard":
+                    const board = JsonParser.getBoard(content);
+                    game.updateBoard(board);
+                    break;
+                default:
+                    console.log("Unknown request type: " + requestType);
+                    break;
+            }
         }
 
         socket.onerror = event => { // TODO
@@ -87,14 +124,16 @@ namespace connection{
             return JSON.parse(json).Color;
         }
 
-        export function getBoard(json: string) : Board{ // TODO: check if it works
-            let obj = JSON.parse(json);
-            let pieces = obj.Pieces.map(
+        export function getBoard(json) : Board{ // TODO: check if it works
+            console.log(json);
+
+            let pieces = json.Pieces.map(
                 (value: any) => {
-                    return new Piece(value.x,value.y,value.color,value.isQueen);
+                    return new Piece(value.x,value.y,value.Color,value.isQueen);
                 }
             );
-            return new Board(obj.Width,obj.Height,pieces);
+            console.log(pieces);
+            return new Board(pieces,10,10); // TODO: get width and height from json
         }
 
         export function getMove(json: string) : Move{ // TODO: check if it works
@@ -171,9 +210,9 @@ namespace connection{
         }
 
         export const enum Request {
-            GetColor = "{\"RequestType\":\"GetColor\"}",
-            GetBoard = "{\"RequestType\":\"GetBoard\"}",
-            GetState = "{\"RequestType\":\"GetState\"}"
+            GetColor = '{"RequestType":"GetColor","Content":{}}',
+            GetBoard = '{"RequestType":"GetBoard","Content":{}}',
+            GetState = '{"RequestType":"GetState","Content":{}}'
         }
     }
 
@@ -181,6 +220,8 @@ namespace connection{
 }
 
 namespace html{
+    export let settings : Map<string,string> = new Map<string,string>();
+
     export function startWindow(){  // Create HTML div with id="startWindow" inside div with id="content"
         const div = document.createElement('div');
 
@@ -226,18 +267,58 @@ namespace html{
         div.appendChild(select);
         
         div.appendChild(document.createElement('br'));
+        // create select for color
+        const label_3 = document.createElement('label');
+        label_3.setAttribute('for','color');
+        label_3.innerText = "Color:  ";
+        div.appendChild(label_3);
+        // create select
+        const select_2 = document.createElement('select');
+        select_2.setAttribute('id','color');
+        select_2.setAttribute('name','color');
+        // create options
+        game.variantsColors.get(game.variants[0]).forEach(
+            value => {
+                const option = document.createElement('option');
+                option.setAttribute('value',value);
+                option.innerText = value;
+                select_2.appendChild(option);
+            }
+        );
+        select.onchange = ()=>{
+            select_2.innerHTML = "";
+            game.variantsColors.get(select.value).forEach(
+                value => {
+                    const option = document.createElement('option');
+                    option.setAttribute('value',value);
+                    option.innerText = value;
+                    select_2.appendChild(option);
+                }
+            );
+        }
+        div.appendChild(select_2);
+        div.appendChild(document.createElement('br'));
         // create button
         const button = document.createElement('button');
         button.innerText = "Connect";
         button.classList.add('button-4');
         button.onclick = ()=>{
-          connection.serverUrl = textField.value;
-          /* TODO: connection stuff */
-          connection.ConnectToServer();
+            settings.set('variant',select.value);
+            settings.set('color',select_2.value);
+
+            connection.serverUrl = textField.value;
+            connection.ConnectToServer();
         };
         div.appendChild(button);
 
         document.getElementById("content")?.appendChild(div);
+    }
+
+    export function removeStartWindow(){  // Remove div with id="startWindow"
+        const div = document.getElementById('startWindow');
+        if(div !== null){
+            div.remove();
+        }
     }
 
     export function createBoard(width : number, height : number){   // Create HTML table with id="board" inside div with id="content"
@@ -268,6 +349,7 @@ namespace html{
     }
 
     export function updateBoard(board: Board){  // Update HTML table to match board
+        log("Updating board with pieces");
         const table = <HTMLTableElement>document.getElementById('board');
         if(table === null){
             return;
@@ -319,17 +401,45 @@ namespace html{
 }
 
 namespace game{
-    export let PlayerColor : string = "white";
-    export let Turn : string = "white";
+    let PlayerColor : string = "white";
+    let Turn : string = "white";
+    let Variant : string = "Standard";
 
-    export let board : Board;
+    let board : Board;
 
     export const variants : string[] = [
         "Standard"
-    ]
+    ];
+    export const variantsColors : Map<string, string[]> = new Map([
+        ["Standard",["white","black"]]
+    ]);
+    export const variantSizes : Map<string, [number,number]> = new Map([
+        ["Standard",[10,10]]
+    ]);
 
     export function init(){
         html.startWindow();
+    }
+
+    export function start(variant: string, color: string){
+        Variant = variant;
+        PlayerColor = color;
+
+        html.removeStartWindow();
+
+        html.log("Starting game with variant: " + variant + " and color: " + color);
+        console.log("Starting game with variant: " + variant + " and color: " + color);
+
+        html.createBoard(
+            variantSizes.get(variant)[0],
+            variantSizes.get(variant)[1]
+        );
+    }
+
+    export function updateBoard(newBoard: Board){
+        board = newBoard;
+        console.log(board);
+        html.updateBoard(board);
     }
 
     export function click(x: number, y: number){

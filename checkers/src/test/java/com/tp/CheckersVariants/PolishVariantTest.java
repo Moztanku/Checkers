@@ -198,8 +198,4 @@ public class PolishVariantTest extends CheckersTest {
     public void testInvalidMove(){
         /* TODO */
     }
-
-    public Checkers getPolishCheckers(){
-        return new Checkers(new PolishChekersFactory());
-    }
 }

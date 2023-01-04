@@ -1,5 +1,9 @@
 package com.tp.Model;
 
 public enum Player{
-    WHITE, BLACK
+    WHITE, BLACK;
+
+    public Player getOpponent(){
+        return this == WHITE ? BLACK : WHITE;
+    }
 }

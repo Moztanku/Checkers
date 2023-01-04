@@ -14,7 +14,7 @@ div#startWindow{
 
     text-align: center;
 
-    line-height: 16vh;
+    line-height: 12vh;
 }
 div#startWindow > label,input,select{
     border-width: 1px;
@@ -55,14 +55,14 @@ td[state="available"]{
     background-color: green;
 }
 
-td[piece="WHITE"]{
+td[piece="white"]{
     background-image: radial-gradient(circle, rgba(255, 255, 255, 1) 44%, rgba(44, 28, 15, 1) 45%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
     background-size: auto;
     background-position: left top;
     background-repeat: repeat;
 }
 
-td[piece="BLACK"]{
+td[piece="black"]{
     background-image: radial-gradient(circle, rgba(34, 34, 34, 1) 44%, rgba(44, 28, 15, 1) 47%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
     background-size: auto;
     background-position: left top;
@@ -87,7 +87,6 @@ div#log > p{
     margin-right: 10px;
     padding: 4px;
     font-size: 12px;
-    border: 
 }
 
 div#log > p:nth-child(odd){

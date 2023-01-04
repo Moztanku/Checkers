@@ -23,6 +23,7 @@ public abstract class CheckersTest {
     }
 
     protected Checkers getPolishCheckers(){
-        return new Checkers(new PolishChekersFactory());
+        Checkers.createInstance(new PolishChekersFactory());
+        return Checkers.getInstance();
     }
 }

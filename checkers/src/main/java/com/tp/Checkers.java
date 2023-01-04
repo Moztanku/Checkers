@@ -16,10 +16,22 @@ public class Checkers {
     private MovementChecker movement;
     private IGameState state;
 
-    public Checkers(ICheckersFactory factory) {
+    private static Checkers instance;
+
+    private Checkers(ICheckersFactory factory) {
         board = factory.createBoard();
         movement = factory.createMovement();
         state = factory.createState(this);
+    }
+
+    public static void createInstance(ICheckersFactory factory){
+        instance = new Checkers(factory);
+    }
+    public static Checkers getInstance(){
+        if(instance == null)
+            throw new IllegalStateException("Instance not created");
+
+        return instance;
     }
 
     public void move(Move move, Player player) throws InvalidMoveException {
