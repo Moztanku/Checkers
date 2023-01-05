@@ -7,9 +7,23 @@
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
-    <div id="content"></div>
-    <div id="log">
+    <div id="content">
+        <div id="startWindow">
+            <h1>Checkers</h1>
+            <label for="address">Server address: </label>
+            <input type="text" id="address" name="address" value="ws://localhost:8080">
+            <br>
+            <label for="variant">Game variant: </label>
+            <select id="variant" name="variant"></select>
+            <br>
+            <label for="color">Color: </label>
+            <select id="color" name="color"></select>
+            <br>
+            <button id="connect" class="button-4">Connect</button>
+        </div>
     </div>
-    <script src="generated_js/script_2.js"></script>
+    <div id="log"></div>
+    <div id="hide-log"></div>
+    <script src="generated_js/script.js"></script>
   </body>
 </html>

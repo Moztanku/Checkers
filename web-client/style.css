@@ -80,6 +80,13 @@ div#log{
     left: 0;
     overflow: auto;
 }
+div#log::-webkit-scrollbar{
+    display: none;
+}
+
+div#log.hidden{
+    display: none;
+}
 
 div#log > p{
     margin: 0;
@@ -93,13 +100,18 @@ div#log > p:nth-child(odd){
     background-color: #2F363D;
 }
 
-div#log > div#hide{
+div#hide-log{
     position: absolute;
-    top: 0;
+    bottom: calc(15vh - 20px);
     right: 0;
     width: 20px;
     height: 20px;
-    background-color: #959DA5;
+    background: rgb(120,120,120);
+    background: linear-gradient(45deg, rgba(120,120,120,1) 50%, rgba(80,80,80,1) 50%);
+}
+
+div#hide-log.hidden{
+    bottom: 0;
 }
 
 /* https://getcssscan.com/ */

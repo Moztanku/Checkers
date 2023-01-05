@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import com.tp.Checkers;
 import com.tp.CheckersTest;
-import com.tp.CheckersVariants.Polish.PolishChekersFactory;
 import com.tp.Exceptions.InvalidMoveException;
 import com.tp.GameStates.WhiteTurn;
 import com.tp.Model.Board;
