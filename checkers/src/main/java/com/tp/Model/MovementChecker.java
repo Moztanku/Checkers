@@ -88,7 +88,9 @@ public abstract class MovementChecker {
             for(int y = -1; y <= 1; y += 2){
                 if(board.getPiece(piece.X + x, piece.Y + y) != null &&
                     board.getPiece(piece.X + x, piece.Y + y).color != piece.color && 
-                    board.getPiece(piece.X + 2*x, piece.Y + 2*y) == null){
+                    board.getPiece(piece.X + 2*x, piece.Y + 2*y) == null &&
+                    piece.X + 2*x >= 0 && piece.X + 2*x < board.getSize() &&
+                    piece.Y + 2*y >= 0 && piece.Y + 2*y < board.getSize()){
                     return true;
                 }
             }

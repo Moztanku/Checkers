@@ -1,0 +1,174 @@
+html{
+    overflow: hidden;
+}
+
+div#startWindow{
+    position: relative;
+    width: 76vw;
+    height: calc(80vh - 4vw);
+    margin: auto;
+    background-color: antiquewhite;
+
+    border-radius: 4vw;
+    padding: 2vw;
+
+    text-align: center;
+
+    line-height: 12vh;
+}
+div#startWindow > label,input,select{
+    border-width: 1px;
+    border-radius: 12px;
+    font-size: 3vh;
+}
+div#startWindow > button{
+    font-size: 3vh;
+}
+div#startWindow > h1{
+    font-size: 12vh;
+    margin: 0;
+    padding: 0;
+}
+
+table{
+    position: relative;
+    display: table;
+    margin: auto;
+    min-width: 50vw;
+    min-height: 50vw;
+    table-layout: auto;
+}
+
+td[color="white"]{
+    background-color: antiquewhite;
+}
+
+td[color="black"]{
+    background-color: maroon;
+}
+
+td[state="active"]{
+    background-color: yellow;
+}
+
+td[state="available"]{
+    background-color: green;
+}
+
+td[piece="white"]{
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 1) 44%, rgba(44, 28, 15, 1) 45%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
+    background-size: auto;
+    background-position: left top;
+    background-repeat: repeat;
+}
+
+td[piece="black"]{
+    background-image: radial-gradient(circle, rgba(34, 34, 34, 1) 44%, rgba(44, 28, 15, 1) 47%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
+    background-size: auto;
+    background-position: left top;
+    background-repeat: repeat;
+}
+
+div#log{
+    position: absolute;
+    background-color: #24292E;
+    color: #FAFBFC;
+    width: 100%;
+    height: 14vh;
+    padding-top: 1vh;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+}
+div#log::-webkit-scrollbar{
+    display: none;
+}
+
+div#log.hidden{
+    display: none;
+}
+
+div#log > p{
+    margin: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+    padding: 4px;
+    font-size: 12px;
+}
+
+div#log > p:nth-child(odd){
+    background-color: #2F363D;
+}
+
+div#hide-log{
+    position: absolute;
+    bottom: calc(15vh - 20px);
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: rgb(120,120,120);
+    background: linear-gradient(45deg, rgba(120,120,120,1) 50%, rgba(80,80,80,1) 50%);
+}
+
+div#hide-log.hidden{
+    bottom: 0;
+}
+
+/* https://getcssscan.com/ */
+
+.button-4 {
+  appearance: none;
+  background-color: #FAFBFC;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 10px;
+  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0, rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+  box-sizing: border-box;
+  color: #24292E;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  padding: 15px 30px;
+  position: relative;
+  transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
+.button-4:hover {
+  background-color: #F3F4F6;
+  text-decoration: none;
+  transition-duration: 0.1s;
+}
+
+.button-4:disabled {
+  background-color: #FAFBFC;
+  border-color: rgba(27, 31, 35, 0.15);
+  color: #959DA5;
+  cursor: default;
+}
+
+.button-4:active {
+  background-color: #EDEFF2;
+  box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
+  transition: none 0s;
+}
+
+.button-4:focus {
+  outline: 1px transparent;
+}
+
+.button-4:before {
+  display: none;
+}
+
+.button-4:-webkit-details-marker {
+  display: none;
+}

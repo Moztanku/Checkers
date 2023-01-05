@@ -1,5 +1,7 @@
 package com.tp.Model;
 
+import com.google.gson.JsonObject;
+
 /**
  * Class describing one piece, or checker, or draught.
  */
@@ -15,6 +17,12 @@ public class Piece {
     }
     public Piece(Piece piece){
         this(piece.X, piece.Y, piece.isQueen, piece.color);
+    }
+    public Piece(JsonObject json){
+        this.X = json.get("x").getAsInt();
+        this.Y = json.get("y").getAsInt();
+        this.isQueen = json.get("isQueen").getAsBoolean();
+        this.color = Player.valueOf(json.get("color").getAsString().toUpperCase());
     }
 
     public int X;

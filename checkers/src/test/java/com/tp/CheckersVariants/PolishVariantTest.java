@@ -2,13 +2,11 @@ package com.tp.CheckersVariants;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeNoException;
 
 import org.junit.Test;
 
 import com.tp.Checkers;
 import com.tp.CheckersTest;
-import com.tp.CheckersVariants.Polish.PolishChekersFactory;
 import com.tp.Exceptions.InvalidMoveException;
 import com.tp.GameStates.WhiteTurn;
 import com.tp.Model.Board;
@@ -82,9 +80,121 @@ public class PolishVariantTest extends CheckersTest {
         assertEquals( 19,board.getPieceCount(Player.BLACK));
     }
 
+    @Test
+    public void testOutOfBounds(){
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
 
+        try{
+            Move move = new Move(board.getPiece(0, 0), new Piece(-1,-1,Player.WHITE));
+            checkers.move(move,Player.WHITE);
+        } catch(InvalidMoveException e){
+            assertEquals("Move out of bounds", e.getMessage());
+        }
+        try{
+            Move move = new Move(new Piece(-1,-1,Player.WHITE), new Piece(0,0,Player.WHITE));
+            checkers.move(move,Player.WHITE);
+        } catch(InvalidMoveException e){
+            assertEquals("Move out of bounds", e.getMessage());
+        }
+        try{
+            Move move = new Move(board.getPiece(1,3), new Piece(0,4,Player.WHITE));
+            checkers.move(move,Player.WHITE);
+        } catch(InvalidMoveException e){
+            assertEquals(null, e);
+        }
+        try{
+            Move move = new Move(board.getPiece(1, 9), new Piece(0,10,Player.BLACK));
+            checkers.move(move,Player.BLACK);
+        } catch(InvalidMoveException e){
+            assertEquals("Move out of bounds", e.getMessage());
+        }
+        makeMove(board, 8, 6, 9, 5);
+        makeMove(board, 9, 3, 8, 4);
+        makeMove(board, 8, 8, 0, 0);
+        checkers.getState().nextTurn();
+        try{
+            Move move = new Move(
+                board.getPiece(8,4),
+                new Piece(8,8,Player.WHITE),
+                true,
+                new Piece[] { board.getPiece(9,5), board.getPiece(9,7) }
+            );
+            checkers.move(move,Player.WHITE);
+        } catch(InvalidMoveException e){
+            assertEquals("Move out of bounds", e.getMessage());
+        }
+    }
 
-    public Checkers getPolishCheckers(){
-        return new Checkers(new PolishChekersFactory());
+    @Test
+    public void testJumpOverOwnPieces(){
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
+
+        try{
+            Move move = new Move(
+                board.getPiece(0,2),
+                new Piece(2,4,Player.WHITE),
+                true,
+                new Piece[] { board.getPiece(1,3) }
+            );
+            checkers.move(move,Player.WHITE);
+        } catch(InvalidMoveException e){
+            assertEquals("Cannot jump over own piece", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testSpaceOccupied(){
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
+
+        try{
+            Move move = new Move(
+                board.getPiece(0,2),
+                new Piece(1,3,Player.WHITE)
+            );
+            checkers.move(move,Player.WHITE);
+        } catch(InvalidMoveException e){
+            assertEquals("Space occupied", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testJumpedExists(){
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
+
+        try{
+            Move move = new Move(
+                board.getPiece(1,3),
+                new Piece(3,5,Player.WHITE),
+                true,
+                new Piece[] { new Piece(2,4,Player.BLACK) }
+            );
+            checkers.move(move,Player.WHITE);
+        } catch(InvalidMoveException e){
+            assertEquals("Jumped piece does not exist", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testJumpPossible(){
+        /* TODO */
+    }
+
+    @Test
+    public void testJumpRequired(){
+        /* TODO */
+    }
+
+    @Test
+    public void testPromotion(){
+        /* TODO */
+    }
+
+    @Test
+    public void testInvalidMove(){
+        /* TODO */
     }
 }

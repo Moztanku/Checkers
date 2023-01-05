@@ -14,6 +14,10 @@ public class GameEnded implements IGameState {
         this.winner = winner;
     }
 
+    public Player getWinner() {
+        return winner;
+    }
+
     @Override
     public Player getTurn() {
         return null;
