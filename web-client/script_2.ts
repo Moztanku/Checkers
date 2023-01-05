@@ -81,7 +81,7 @@ namespace connection{
 
         socket.onmessage = event => {   // TODO
             const json = JSON.parse(event.data);
-            console.log("Received: " + json);
+            console.log("Received: ",json);
 
             const requestType = json.RequestType;
             const content = json.Content;
@@ -100,8 +100,22 @@ namespace connection{
                     const board = JsonParser.getBoard(content);
                     game.updateBoard(board);
                     break;
+                case "GetState":
+                    const state = content.State;
+                    game.updateState(state);
+                    break;
+                case "Exception":
+                    html.log(content.Message);
+                    console.log(content.StackTrace);
+                    SendRequest(
+                        JsonParser.Request.GetBoard
+                    );
+                    SendRequest(
+                        JsonParser.Request.GetState
+                    )
+                    break;
                 default:
-                    console.log("Unknown request type: " + requestType);
+                    console.log("Unknown request type: ",requestType);
                     break;
             }
         }
@@ -111,11 +125,13 @@ namespace connection{
         }
 
         socket.onclose = event => { // TODO
-            console.log("Connection closed");
+            console.log("Lost connection to server");
+            html.log("Lost connection to server");
         }
     }
 
     export function SendRequest(request: string){   // TODO
+        console.log("Sent: " + request);
         socket.send(request);
     }
 
@@ -125,14 +141,11 @@ namespace connection{
         }
 
         export function getBoard(json) : Board{ // TODO: check if it works
-            console.log(json);
-
             let pieces = json.Pieces.map(
                 (value: any) => {
                     return new Piece(value.x,value.y,value.Color,value.isQueen);
                 }
             );
-            console.log(pieces);
             return new Board(pieces,10,10); // TODO: get width and height from json
         }
 
@@ -203,7 +216,7 @@ namespace connection{
             };
             let obj = {
                 RequestType: "Move",
-                Move: moveJson
+                Content: moveJson
             };
 
             return JSON.stringify(obj);
@@ -349,7 +362,6 @@ namespace html{
     }
 
     export function updateBoard(board: Board){  // Update HTML table to match board
-        log("Updating board with pieces");
         const table = <HTMLTableElement>document.getElementById('board');
         if(table === null){
             return;
@@ -407,14 +419,21 @@ namespace game{
 
     let board : Board;
 
+    let selectedPiece : [number,number] | null = null;
+    let availableMoves : Map<String,[number,number][]> = new Map();
+
+    let move : Move | null = null;
+
     export const variants : string[] = [
-        "Standard"
+        "Standard","20x20"
     ];
     export const variantsColors : Map<string, string[]> = new Map([
-        ["Standard",["white","black"]]
+        ["Standard",["white","black"]],
+        ["20x20", ["white","black"]]
     ]);
     export const variantSizes : Map<string, [number,number]> = new Map([
-        ["Standard",[10,10]]
+        ["Standard",[10,10]],
+        ["20x20", [20,20]]
     ]);
 
     export function init(){
@@ -438,12 +457,196 @@ namespace game{
 
     export function updateBoard(newBoard: Board){
         board = newBoard;
-        console.log(board);
         html.updateBoard(board);
+
+        availableMoves.clear();
+        jumpAvailable = false;
+        board.pieces.forEach(
+            val => {
+                if(val.color === PlayerColor){
+                    availableMoves.set([val.x,val.y].toString(),getAvailableJumps.get(Variant)(val.x,val.y));
+                }
+            }
+        );
+        board.pieces.forEach(
+            val => {
+                if(val.color === PlayerColor){
+                    availableMoves.get([val.x,val.y].toString()).push(...getAvailableMoves.get(Variant)(val.x,val.y));
+                }
+            }
+        );
+    }
+
+    export function updateState(state: string){
+        Turn = state;
+        html.log("Turn: " + state);
+        console.log("Turn: " + state);
     }
 
     export function click(x: number, y: number){
+        if(Turn !== PlayerColor){
+            return;
+        }
+
+        if(board.getPiece(x,y)?.color === PlayerColor){
+            deselectPiece();
+            selectedPiece = [x,y];
+            html.setCellState(x,y,"selected");
+
+            availableMoves.get([x,y].toString()).forEach(
+                val => html.setCellState(val[0],val[1],"available")
+            );
+        } else if(selectedPiece !== null && availableMoves.get(selectedPiece.toString()).some(val => val[0] === x && val[1] === y)){
+            makeMove(x,y);
+            deselectPiece();
+            updateBoard(board);
+
+            if(!jumpAvailable){
+                console.log("Changing turn");
+                Turn = Turn === "white" ? "black" : "white";
+                connection.SendRequest(
+                    connection.JsonParser.moveJson(move)
+                );
+                move = null;
+            }
+        } else {
+            deselectPiece();
+        }
     }
+
+    function makeMove(x : number, y : number){
+        if(Turn !== PlayerColor)
+            return;
+        const px = selectedPiece[0];
+        const py = selectedPiece[1];
+
+        const dx = x - px;
+        const dy = y - py;
+
+        const isJump : boolean = Math.abs(dx) === 2 && Math.abs(dy) === 2;
+        const isQueen : boolean = board.getPiece(selectedPiece[0],selectedPiece[1]).isQueen?true:
+            (PlayerColor === "white" && y === board.height - 1) || (PlayerColor === "black" && y === 0);
+
+        if(move === null){
+            move = new Move(
+                new Piece(px,py,PlayerColor,isQueen),
+                new Piece(x,y,PlayerColor,isQueen),
+                isJump,
+                []
+            );
+
+            if(isJump){
+                const mx = selectedPiece[0] + dx/2;
+                const my = selectedPiece[1] + dy/2;
+                const jumped = board.getPiece(mx,my);
+                move.jumpedPieces.push(jumped);
+            }
+        } else {
+            move.end.x = x;
+            move.end.y = y;
+
+            const mx = selectedPiece[0] + dx/2;
+            const my = selectedPiece[1] + dy/2;
+            const jumped = board.getPiece(mx,my);
+            move.jumpedPieces.push(jumped);
+        }
+
+        board.removePiece(px,py);
+        if(isJump)
+            board.removePiece(px + dx/2,py + dy/2);
+        board.addPiece(new Piece(x,y,PlayerColor,isQueen));
+    }
+
+    function deselectPiece(){
+        if(selectedPiece === null)
+            return;
+        html.setCellState(selectedPiece[0],selectedPiece[1],"neutral");
+        availableMoves.get(selectedPiece.toString()).forEach(
+            val => html.setCellState(val[0],val[1],"neutral")
+        );
+        selectedPiece = null;
+    }
+
+    let jumpAvailable = false;
+
+    const getAvailableJumps : Map<string, (x: number, y: number) => [number,number][]> = new Map([
+        ["Standard", (px: number, py: number) => {
+            let moves : [number,number][] = [];
+            const enemyColor = PlayerColor === "white" ? "black" : "white";
+
+            if(move !== null && (move.end.x !== px || move.end.y !== py || !move.isJump)){
+                    return moves;
+            }
+
+            for(let x = px-1; x<=px+1; x+=2)
+                for(let y = py-1; y<=py+1; y+=2)
+                    if(board.getPiece(x,y)?.color === enemyColor){
+                        let dx = x-px;  let dy = y-py;
+                        if(board.getPiece(x+dx,y+dy) === null){
+                            jumpAvailable = true;
+                            moves.push([x+dx,y+dy]);
+                        }
+                    }
+            
+            return moves;
+        }],
+        ["20x20", (px: number, py: number) => {
+            let moves : [number,number][] = [];
+            const enemyColor = PlayerColor === "white" ? "black" : "white";
+
+            if(move !== null && (move.end.x !== px || move.end.y !== py)){
+                return moves;
+            }
+
+            for(let x = px-1; x<=px+1; x+=2)
+                for(let y = py-1; y<=py+1; y+=2)
+                    if(board.getPiece(x,y)?.color === enemyColor){
+                        let dx = x-px;  let dy = y-py;
+                        if(board.getPiece(x+dx,y+dy) === null){
+                            jumpAvailable = true;
+                            moves.push([x+dx,y+dy]);
+                        }
+                    }
+            return moves;
+        }]
+    ]);
+
+    const getAvailableMoves : Map<string, (x: number, y: number) => [number,number][]> = new Map([
+        ["Standard", (px: number, py: number) => {
+            if(jumpAvailable || move !== null)
+                return [];
+
+            let moves : [number,number][] = [];
+            const dy = PlayerColor === "white" ? 1 : -1;
+
+            for(let x = px-1; x<=px+1; x+=2)
+                for(let y = py-1; y<=py+1; y+=2)
+                    if(board.getPiece(x,y) === null && (y === py+dy || board.getPiece(px,py)?.isQueen)){
+                        if(x >= board.width || x < 0 || y >= board.height || y < 0)
+                            continue;
+                        else
+                            moves.push([x,y]);
+                    }
+            return moves;
+        }],
+        ["20x20", (px: number, py: number) => {
+            if(jumpAvailable || move !== null)
+                return [];
+
+            let moves : [number,number][] = [];
+            const dy = PlayerColor === "white" ? 1 : -1;
+
+            for(let x = px-1; x<=px+1; x+=2)
+                for(let y = py-1; y<=py+1; y+=2)
+                    if(board.getPiece(x,y) === null && (y === py+dy || board.getPiece(px,py)?.isQueen)){
+                        if(x >= board.width || x < 0 || y >= board.height || y < 0)
+                            continue;
+                        else
+                            moves.push([x,y]);
+                    }
+            return moves;
+        }]
+    ]);
 }
 
 game.init();

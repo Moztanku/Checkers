@@ -1,6 +1,5 @@
 package com.tp;
 
-import java.io.Console;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.ServerSocket;
@@ -25,8 +24,13 @@ import com.tp.Model.Player;
 
 public class MockServer {
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
-        ServerSocket serverSocket = new ServerSocket(8080);
-        System.out.println("Server started on port 8080...");
+        int port = 8080;
+        if(args.length > 0){
+            port = Integer.parseInt(args[0]);
+        }
+
+        ServerSocket serverSocket = new ServerSocket(port);
+        System.out.println("Server started on port " + port + "...");
 
         var pool = Executors.newFixedThreadPool(2);
         ServerThread[] players = new ServerThread[2];
@@ -39,6 +43,9 @@ public class MockServer {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        players[0].setOpponent(players[1].getSocket());
+        players[1].setOpponent(players[0].getSocket());
 
         // wait for players to set their color and variant
         while(players[0].getPlayer() == null || players[1].getPlayer() == null ||
@@ -119,6 +126,7 @@ public class MockServer {
 class ServerThread implements Runnable {
 
     private Socket client = null;
+    private Socket opponent = null;
 
     private Player player = null;
     private String variant = null;
@@ -131,17 +139,24 @@ class ServerThread implements Runnable {
 
     public Player getPlayer(){
         return this.player;
-    };
+    }
     public void setPlayer(Player player){
         this.player = player;
-    };
+    }
 
     public String getVariant(){
         return this.variant;
-    };
+    }
     public void setVariant(String variant){
         this.variant = variant;
-    };
+    }
+
+    public void setOpponent(Socket opponent){
+        this.opponent = opponent;
+    }
+    public Socket getSocket(){
+        return this.client;
+    }
 
     @Override
     public void run() {
@@ -211,7 +226,7 @@ class ServerThread implements Runnable {
             case "GetBoard":
                 return GetBoard();
             default:
-                return InvalidRequest();
+                return InvalidRequest(new Exception("Invalid request type"));
         }
     }
 
@@ -220,8 +235,7 @@ class ServerThread implements Runnable {
             this.variant = content.get("Variant").getAsString();
             return null;
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            return InvalidRequest();
+            return InvalidRequest(e);
         }
     }
 
@@ -230,17 +244,39 @@ class ServerThread implements Runnable {
             this.player = Player.valueOf(content.get("Color").getAsString().toUpperCase());
             return null;
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            return InvalidRequest();
+            return InvalidRequest(e);
         }
     }
 
     private JsonObject Move(JsonObject content) {
-        return null;
+        var move = new com.tp.Model.Move(content);
+
+        Checkers checkers = Checkers.getInstance();
+        try{
+            checkers.move(move, player);
+        } catch (Exception e){
+            return InvalidRequest(e);
+        }
+        try{
+            sendResponse(opponent.getOutputStream(), GetBoard().toString());
+            sendResponse(opponent.getOutputStream(), GetState().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return GetState();
     }
 
     private JsonObject GetState() {
-        return null;
+        Checkers checkers = Checkers.getInstance();
+
+        var json = new JsonObject();
+        json.addProperty("RequestType", "GetState");
+
+        var content = new JsonObject();
+        content.addProperty("State", checkers.getState().getTurn().toString().toLowerCase());
+
+        json.add("Content", content);
+        return json;
     }
 
     private JsonObject GetBoard() {
@@ -269,8 +305,16 @@ class ServerThread implements Runnable {
         return json;
     }
     
-    private JsonObject InvalidRequest() {
-        return null;
+    private JsonObject InvalidRequest(Exception e) {
+        var json = new JsonObject();
+        json.addProperty("RequestType", "Exception");
+
+        var exception = new JsonObject();
+        exception.addProperty("Message", e.getMessage());
+        exception.addProperty("StackTrace", e.getStackTrace().toString());
+
+        json.add("Content", exception);
+        return json;
     }
 
     private boolean websocketHandshake(Scanner in, OutputStream out) throws IOException {
