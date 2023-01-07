@@ -16,7 +16,7 @@ import com.tp.Model.Player;
 
 // write test for Polish variant of checkers
 
-public class PolishVariantTest extends CheckersTest {
+public class PolishRulesetTest extends CheckersTest {
     @Test
     public void testInitialization(){
         Checkers checkers = getPolishCheckers();

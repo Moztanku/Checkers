@@ -9,11 +9,23 @@ import java.util.concurrent.Executors;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
+import com.tp.CheckersVariants.English.EnglishCheckersFactory;
+import com.tp.CheckersVariants.Italian.ItalianCheckersFactory;
 import com.tp.CheckersVariants.Polish.PolishChekersFactory;
 import com.tp.GameStates.GameEnded;
 import com.tp.Network.ServerThread;
 
+/**
+ * Server class for checkers game
+ * Controller in MVC pattern
+ */
 public class Server {
+    /**
+     * Constructor
+     * @param args - first argument is (optional) port number
+     * @throws IOException - network error
+     * @throws NoSuchAlgorithmException - algorithm not found
+     */
     public static void main(String[] args) throws IOException, NoSuchAlgorithmException {
         final int MAX_PLAYERS = 2;
         int PORT = 8080;
@@ -22,16 +34,16 @@ public class Server {
             PORT = Integer.parseInt(args[0]);
         }
 
-        ServerSocket serverSocket = new ServerSocket(PORT);
+        ServerSocket serverSocket = new ServerSocket(PORT); // create server socket
         System.out.println("Server started on port " + PORT + "...");
 
-        var pool = Executors.newFixedThreadPool(MAX_PLAYERS);
+        var pool = Executors.newFixedThreadPool(MAX_PLAYERS);   // create thread pool for player threads
         ServerThread[] players = new ServerThread[MAX_PLAYERS];
 
         // accept connections 
         try{
             for(int i = 0; i < MAX_PLAYERS; i++){
-                players[i] = new ServerThread(serverSocket.accept());
+                players[i] = new ServerThread(serverSocket.accept());   // accept connection
                 pool.execute(players[i]);
             }
         } catch (Exception e) {
@@ -49,12 +61,12 @@ public class Server {
 
         // wait for players to set their color and variant
         for(int i = 0; i < MAX_PLAYERS; i++){
-            while(players[i].getPlayer() == null || players[i].getVariant() == null){
+            while(players[i].getPlayer() == null || players[i].getVariant() == null){   // wait for player to set color and variant
                 try{
                     if(players[i].getPlayer() == null)
-                        notifyPlayer(players[i], NotifyType.Color);
+                        notifyPlayer(players[i], NotifyType.Color); // notify player about missing color
                     else
-                        notifyPlayer(players[i], NotifyType.Variant);
+                        notifyPlayer(players[i], NotifyType.Variant); // notify player about missing variant
                     Thread.sleep(100);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -86,7 +98,7 @@ public class Server {
 
         Checkers checkers = Checkers.getInstance();
 
-        while(!(checkers.getState() instanceof GameEnded)){
+        while(!(checkers.getState() instanceof GameEnded)){ // wait for game to end
             try{
                 Thread.sleep(1000);
             } catch (Exception e) {
@@ -97,9 +109,14 @@ public class Server {
         System.out.println("Game ended");
         System.out.println("Winner: " + ((GameEnded)checkers.getState()).getWinner());
 
-        serverSocket.close();
+        serverSocket.close();   // close server socket
     }
 
+    /**
+     * Send notification to player
+     * @param player - player to notify
+     * @param type - type of notification (init/color/variant)
+     */
     static private void notifyPlayer(ServerThread player, NotifyType type){
         var gson = new GsonBuilder().create();
         var json = new JsonObject();
@@ -116,19 +133,30 @@ public class Server {
 
         try{
             player.notify(
-                gson.toJson(json)
+                gson.toJson(json)   // create json from string and send it to player
             );
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Map of checkers variants
+     */
     static private Map<String, ICheckersFactory> variants = new HashMap<String, ICheckersFactory>(){
         {
             put("Polish", new PolishChekersFactory());
+            put("English", new EnglishCheckersFactory());
+            put("Italian", new ItalianCheckersFactory());
         }
     };
       
+    /**
+     * Types of notifications
+     * Init - initialization
+     * Color - player color missing
+     * Variant - player variant missing
+     */
     private enum NotifyType{
         Init,
         Color,

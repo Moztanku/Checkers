@@ -3,7 +3,7 @@ package com.tp.Model;
 import com.google.gson.JsonObject;
 
 /**
- * Class describing one piece, or checker, or draught.
+ * Class describing one piece, or checker, or draught...
  */
 public class Piece {
     public Piece(int X,int Y,boolean isQueen, Player color){

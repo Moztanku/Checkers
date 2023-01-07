@@ -6,7 +6,13 @@ import com.tp.Exceptions.InvalidMoveException;
 /**
  * Abstract class containing rules of checkers
  */
-public abstract class MovementChecker {
+public abstract class Ruleset {
+    /**
+     * Verifies that a move is valid
+     * @param move - Move to verify
+     * @param board - Board to verify move on
+     * @throws InvalidMoveException - If move is invalid
+     */
     public void verifyMove(Move move, Board board) throws InvalidMoveException{
         insideBoundsCheck(move.before.X, move.before.Y, board.getSize());
         insideBoundsCheck(move.after.X, move.after.Y, board.getSize());
@@ -19,13 +25,17 @@ public abstract class MovementChecker {
         promotionCheck(move, board);
         MoveCheck(move);
     }
-
+    /**
+     * Check if x and y are inside the bounds of the board
+     */
     protected void insideBoundsCheck(int x, int y, int boardSize) throws InvalidMoveException{
         if(x < 0 || x >= boardSize || y < 0 || y >= boardSize){
             throw new InvalidMoveException("Move out of bounds");
         }
     }
-
+    /**
+     * Check if a move is jumping over own piece
+     */
     protected void jumpOverOwnPieceCheck(Move move) throws InvalidMoveException{
         for(Piece piece : move.jumped){
             if(piece.color == move.before.color){
@@ -33,13 +43,17 @@ public abstract class MovementChecker {
             }
         }
     }
-
+    /**
+     * Check if a move is to a space occupied by a piece
+     */
     protected void spaceOccupiedCheck(Move move, Board board) throws InvalidMoveException{
         if(board.getPiece(move.after.X, move.after.Y) != null){
             throw new InvalidMoveException("Space occupied");
         }
     }
-
+    /**
+     * Check if a move is jumping over a piece that exists
+     */
     protected void jumpedExistsCheck(Move move, Board board) throws InvalidMoveException{
         for(Piece piece : move.jumped){
             if(board.getPiece(piece.X, piece.Y) == null){
@@ -47,7 +61,9 @@ public abstract class MovementChecker {
             }
         }
     }
-
+    /**
+     * Check if a move is possible
+     */
     protected void jumpPossibleCheck(Move move, Board board) throws InvalidMoveException{
         if(!move.isJump){
             return;
@@ -73,7 +89,9 @@ public abstract class MovementChecker {
             throw new InvalidMoveException("Jump not possible");
         }
     }
-
+    /**
+     * Check if a jump is required
+     */
     protected void requiredJumpCheck(Move move, Board board) throws InvalidMoveException{
         if(move.isJump){
             return;
@@ -84,7 +102,9 @@ public abstract class MovementChecker {
             }
         }
     }
-
+    /**
+     * Check if jump is possible for a piece
+     */
     private boolean isJumpPossible(Piece piece, Board board){
         for(int x = -1; x <= 1; x += 2){
             for(int y = -1; y <= 1; y += 2){
@@ -107,7 +127,9 @@ public abstract class MovementChecker {
         }
         return false;
     }
-
+    /**
+     * Check if jump is maximum possible
+     */
     protected void requiredMaxJumpCheck(Move move, Board board) throws InvalidMoveException{
         if(!move.isJump){
             return;
@@ -123,7 +145,9 @@ public abstract class MovementChecker {
             throw new InvalidMoveException("Max jump required");
         }
     }
-
+    /**
+     * Calculate maximum possible jump length for a piece
+     */
     private int maxJumps(Piece piece, Board board, int jumps){
         if(!isJumpPossible(piece, board)){
             return jumps;
@@ -162,7 +186,9 @@ public abstract class MovementChecker {
         }
         return maxJumps;
     }
-
+    /**
+     * Check if promotion is possible
+     */
     protected void promotionCheck(Move move, Board board) throws InvalidMoveException{
         if(move.before.isQueen  == false && move.after.isQueen == true){
             if(move.after.color == Player.WHITE && move.after.Y != board.getSize() - 1){
@@ -173,7 +199,9 @@ public abstract class MovementChecker {
             }
         }
     }
-
+    /**
+     * Check if move corresponds to the rules
+     */
     protected void MoveCheck(Move move) throws InvalidMoveException{
         if(move.isJump){
             return;
