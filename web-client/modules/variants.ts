@@ -1,12 +1,16 @@
 namespace variants {
     export const Names : string[] = [
-        "Polish"
+        "Polish", "English", "Italian"
     ];
     export const Colors : Map<string, string[]> = new Map<string, string[]>([
-        ["Polish", ["white","black"]]
+        ["Polish", ["white","black"]],
+        ["English", ["white","black"]],
+        ["Italian", ["white","black"]]
     ]);
     export const Sizes : Map<string, [number, number]> = new Map<string, [number, number]>([
-        ["Polish", [10,10]]
+        ["Polish", [10,10]],
+        ["English", [8,8]],
+        ["Italian", [8,8]]
     ]);
     const AvailableJumpsFunctions: Map<string, (x: number, y: number) => [number,number][]> = new Map([
         ["Polish", (px: number, py: number) => {
@@ -14,7 +18,7 @@ namespace variants {
             const enemyColor = PlayerColor === "white" ? "black" : "white";
 
             if(move !== null && (move.end.x !== px || move.end.y !== py || !move.isJump)){
-                    return moves;
+                return moves;
             }
 
             for(let x = px-1; x<=px+1; x+=2)
@@ -29,16 +33,45 @@ namespace variants {
                         }
                     }
             return moves;
+        }],
+        ["English", (px: number, py: number) => {
+            let moves : [number, number][] = [];
+
+            if(move !== null && (move.end.x !== px || move.end.y !== py || !move.isJump)){
+                return moves;
+            }
+
+            for(let x = px-1; x <= px+1; x+=2)
+                for(let y = py-1; y <= py+1; y+=2){
+                    if(board.getPiece(x,y) === null || board.getPiece(x,y).color === PlayerColor)
+                        continue;
+                    if(board.getPiece(px,py)?.isQueen || PlayerColor === "white" && y > py || PlayerColor === "black" && y < py){
+                        let dx = x-px;  let dy = y-py;
+                        if(board.getPiece(x+dx,y+dy) === null){
+                            if(x+dx < 0 || x+dx >= board.width || y+dy < 0 || y+dy >= board.height)
+                                continue;
+                            jumpAvailable = true;
+                            moves.push([x+dx,y+dy]);
+                        }
+                    }
+                }
+
+            return moves;
+        }],
+        ["Italian", (px: number, py: number) => {
+            let moves : [number, number][] = [];
+
+            return moves;
         }]
     ]);
 
     const AvailableMovesFunctions: Map<string, (x: number, y: number) => [number,number][]> = new Map([
         ["Polish", (px: number, py: number) => {
-            if(jumpAvailable || move !== null)
-                return [];
-
             let moves : [number,number][] = [];
             const dy = PlayerColor === "white" ? 1 : -1;
+
+            if(jumpAvailable || move !== null)
+                return moves;
 
             for(let x = px-1; x<=px+1; x+=2)
                 for(let y = py-1; y<=py+1; y+=2)
@@ -48,6 +81,28 @@ namespace variants {
                         else
                             moves.push([x,y]);
                     }
+            return moves;
+        }],
+        ["English", (px: number, py: number) => {
+            let moves : [number, number][] = [];
+
+            if(jumpAvailable || move !== null)
+                return moves;
+
+            for(let x = px-1; x <= px+1; x+=2)
+                for(let y = py-1; y <= py+1; y+=2){
+                    if(board.getPiece(x,y) !== null || x >= board.width || x < 0 || y >= board.height || y < 0)
+                        continue;
+                    if(board.getPiece(px,py)?.isQueen || PlayerColor === "white" && y > py || PlayerColor === "black" && y < py){
+                        moves.push([x,y]);
+                    }
+                }
+
+            return moves;
+        }],
+        ["Italian", (px: number, py: number) => {
+            let moves : [number, number][] = [];
+
             return moves;
         }]
     ]);

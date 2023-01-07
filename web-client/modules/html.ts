@@ -8,6 +8,7 @@ namespace html{
         const button = document.getElementById('connect') as HTMLButtonElement;
         const log = document.getElementById('log') as HTMLDivElement;
         const hidelog = document.getElementById('hide-log') as HTMLButtonElement;
+        const darkmode = document.getElementById('dark-mode-toggle') as HTMLButtonElement;
         
         textField.setAttribute('value',connection.serverUrl);
         variants.Names.forEach(
@@ -38,8 +39,14 @@ namespace html{
 
         hidelog?.addEventListener('click',()=>{
             log?.classList.toggle('hidden');
-            hidelog?.classList.toggle('hidden');
+            hidelog.classList.toggle('hidden');
         })
+
+        darkmode?.addEventListener('click',()=>{
+            document.body.classList.toggle('dark');
+            darkmode.classList.toggle('dark');
+        })
+
     }
 
     export function removeStartWindow(){  // Remove div with id="startWindow"
@@ -52,12 +59,12 @@ namespace html{
     export function createBoard(width : number, height : number){   // Create HTML table with id="board" inside div with id="content"
         const table = document.createElement('table');
         table.setAttribute('id','board');
+        table.setAttribute('variant',settings.get('variant'));
     
         for(let y = 0; y < height; y++){
             const tr = table.insertRow();   // Create row
             for(let x = 0; x < width; x++){
                 const ce = tr.insertCell(); // Create cell
-                ce.setAttribute('color',((x+y)%2 === 0)?'black':'white');   // Set color to black or white
                 ce.setAttribute('piece','NONE');    // Set piece to NONE (we will use this later)
                 ce.setAttribute('state','neutral'); // Set state to neutral (we will use this later)
                 ce.onclick = ()=>{ // Set onclick event
@@ -111,6 +118,8 @@ namespace html{
         const tr = table.rows[y];
         const ce = tr.cells[x];
         ce.setAttribute('state',state);
+
+
     }
 
     export function log(text: string, properties: string = ""){ // Log text to div with id="log"

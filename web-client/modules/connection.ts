@@ -101,7 +101,9 @@ namespace connection{
                     return new Piece(value.x,value.y,value.Color,value.isQueen);
                 }
             );
-            return new Board(pieces,10,10); // TODO: get width and height from json
+            const width = json.Width;
+            const height = json.Height;
+            return new Board(pieces, width, height); // TODO: get width and height from json
         }
 
         export function getMove(json: string) : Move{ // TODO: check if it works
