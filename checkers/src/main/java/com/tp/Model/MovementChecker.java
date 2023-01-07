@@ -1,5 +1,6 @@
 package com.tp.Model;
 
+import com.tp.CheckersVariants.Polish.PolishBoard;
 import com.tp.Exceptions.InvalidMoveException;
 
 /**
@@ -14,6 +15,7 @@ public abstract class MovementChecker {
         jumpedExistsCheck(move, board);
         jumpPossibleCheck(move, board);
         requiredJumpCheck(move, board);
+        requiredMaxJumpCheck(move, board);
         promotionCheck(move, board);
         MoveCheck(move);
     }
@@ -57,7 +59,7 @@ public abstract class MovementChecker {
         for(Piece piece : move.jumped){
             int xDiff = piece.X - moved.X;
             int yDiff = piece.Y - moved.Y;
-            if(Math.abs(xDiff) != 1 || Math.abs(yDiff) != 1){
+            if(!moved.isQueen && (Math.abs(xDiff) != 1 || Math.abs(yDiff) != 1)){
                 throw new InvalidMoveException("Jump longer than 1 not possible");
             }
             moved.X += 2*xDiff;
@@ -86,16 +88,79 @@ public abstract class MovementChecker {
     private boolean isJumpPossible(Piece piece, Board board){
         for(int x = -1; x <= 1; x += 2){
             for(int y = -1; y <= 1; y += 2){
-                if(board.getPiece(piece.X + x, piece.Y + y) != null &&
-                    board.getPiece(piece.X + x, piece.Y + y).color != piece.color && 
-                    board.getPiece(piece.X + 2*x, piece.Y + 2*y) == null &&
-                    piece.X + 2*x >= 0 && piece.X + 2*x < board.getSize() &&
-                    piece.Y + 2*y >= 0 && piece.Y + 2*y < board.getSize()){
+                int diagonal = 1;
+                do{
+                    Piece jumped = board.getPiece(piece.X + diagonal*x, piece.Y + diagonal*y);
+                    if(jumped == null){
+                        continue;
+                    }
+                    if(jumped.color == piece.color ||
+                        board.getPiece(piece.X + (diagonal+1)*x, piece.Y + (diagonal+1)*y) != null ||
+                        piece.X + (diagonal+1)*x < 0 || piece.X + (diagonal+1)*x >= board.getSize() ||
+                        piece.Y + (diagonal+1)*y < 0 || piece.Y + (diagonal+1)*y >= board.getSize()
+                    ){
+                        break;
+                    }
                     return true;
-                }
+                } while( piece.isQueen && ++diagonal < board.getSize() );
             }
         }
         return false;
+    }
+
+    protected void requiredMaxJumpCheck(Move move, Board board) throws InvalidMoveException{
+        if(!move.isJump){
+            return;
+        }
+        int maxJumpLength = 0;
+        for(Piece piece : board.getPieces(move.before.color)){
+            int jumpLength = maxJumps(piece, board, 0);
+            if(jumpLength > maxJumpLength){
+                maxJumpLength = jumpLength;
+            }
+        }
+        if(maxJumpLength != move.jumped.length){
+            throw new InvalidMoveException("Max jump required");
+        }
+    }
+
+    private int maxJumps(Piece piece, Board board, int jumps){
+        if(!isJumpPossible(piece, board)){
+            return jumps;
+        }
+        int maxJumps = jumps;
+        for(int x = -1; x <= 1; x += 2){
+            for(int y = -1; y <= 1; y += 2){
+                int diagonal = 1;
+                do{
+                    Piece jumped = board.getPiece(piece.X + diagonal*x, piece.Y + diagonal*y);
+                    if(jumped == null){
+                        continue;
+                    }
+                    if(jumped.color == piece.color ||
+                        board.getPiece(piece.X + (diagonal+1)*x, piece.Y + (diagonal+1)*y) != null ||
+                        piece.X + (diagonal+1)*x < 0 || piece.X + (diagonal+1)*x >= board.getSize() ||
+                        piece.Y + (diagonal+1)*y < 0 || piece.Y + (diagonal+1)*y >= board.getSize()
+                    ){
+                        break;
+                    }
+                    Piece moved = new Piece(
+                        piece.X + (diagonal+1)*x,
+                        piece.Y + (diagonal+1)*y,
+                        piece.isQueen,
+                        piece.color
+                    );
+                    Board newBoard = new PolishBoard(board);
+                    newBoard.makeMove(new Move(piece, moved, true, new Piece[]{jumped}));
+
+                    int jumpLength = maxJumps(moved, newBoard, jumps + 1);
+                    if(jumpLength > maxJumps){
+                        maxJumps = jumpLength;
+                    }
+                } while( piece.isQueen && ++diagonal < board.getSize() );
+            }
+        }
+        return maxJumps;
     }
 
     protected void promotionCheck(Move move, Board board) throws InvalidMoveException{

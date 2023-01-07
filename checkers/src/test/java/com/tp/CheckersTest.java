@@ -26,4 +26,12 @@ public abstract class CheckersTest {
         Checkers.createInstance(new PolishChekersFactory());
         return Checkers.getInstance();
     }
+
+    protected void emptyBoard(Board board){
+        board.getPieces().clear();
+    }
+
+    protected void addPiece(Board board, Piece piece){
+        board.getPieces().add(piece);
+    }
 }

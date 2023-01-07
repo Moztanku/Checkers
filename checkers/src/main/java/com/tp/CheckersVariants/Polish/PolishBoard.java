@@ -19,6 +19,12 @@ public class PolishBoard extends Board {
         }
     }
 
+    public PolishBoard(Board board){
+        for(Piece piece : board.getPieces()){
+            this.addPiece(new Piece(piece.X, piece.Y, piece.color));
+        }
+    }
+
     @Override
     public int getSize() {
         return 10;
