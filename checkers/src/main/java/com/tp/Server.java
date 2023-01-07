@@ -125,7 +125,7 @@ public class Server {
 
     static private Map<String, ICheckersFactory> variants = new HashMap<String, ICheckersFactory>(){
         {
-            put("Standard", new PolishChekersFactory());
+            put("Polish", new PolishChekersFactory());
         }
     };
       
