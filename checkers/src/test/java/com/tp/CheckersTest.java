@@ -2,6 +2,8 @@ package com.tp;
 
 import static org.junit.Assert.assertEquals;
 
+import com.tp.CheckersVariants.English.EnglishCheckersFactory;
+import com.tp.CheckersVariants.Italian.ItalianCheckersFactory;
 import com.tp.CheckersVariants.Polish.PolishChekersFactory;
 import com.tp.Model.Board;
 import com.tp.Model.Move;
@@ -25,5 +27,21 @@ public abstract class CheckersTest {
     protected Checkers getPolishCheckers(){
         Checkers.createInstance(new PolishChekersFactory());
         return Checkers.getInstance();
+    }
+    protected Checkers getEnglishCheckers(){
+        Checkers.createInstance(new EnglishCheckersFactory());
+        return Checkers.getInstance();
+    }
+    protected Checkers getItalianCheckers(){
+        Checkers.createInstance(new ItalianCheckersFactory());
+        return Checkers.getInstance();
+    }
+
+    protected void emptyBoard(Board board){
+        board.getPieces().clear();
+    }
+
+    protected void addPiece(Board board, Piece piece){
+        board.getPieces().add(piece);
     }
 }

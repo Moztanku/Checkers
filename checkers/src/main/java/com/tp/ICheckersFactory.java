@@ -1,7 +1,7 @@
 package com.tp;
 
 import com.tp.Model.Board;
-import com.tp.Model.MovementChecker;
+import com.tp.Model.Ruleset;
 import com.tp.Model.IGameState;
 
 /**
@@ -9,6 +9,6 @@ import com.tp.Model.IGameState;
  */
 public interface ICheckersFactory {
     Board createBoard();
-    MovementChecker createMovement();
+    Ruleset createMovement();
     IGameState createState(Checkers checkers);
 }

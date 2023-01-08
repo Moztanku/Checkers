@@ -1,31 +1,28 @@
-package com.tp.CheckersVariants.Polish;
+package com.tp.CheckersVariants.English;
 
 import com.tp.Checkers;
 import com.tp.ICheckersFactory;
 import com.tp.GameStates.WhiteTurn;
 import com.tp.Model.Board;
-import com.tp.Model.Ruleset;
 import com.tp.Model.IGameState;
+import com.tp.Model.Ruleset;
 
 /**
- * Factory for creating a Polish checkers game
+ * Factory for creating an English checkers game
  */
-public class PolishChekersFactory implements ICheckersFactory {
-
+public class EnglishCheckersFactory implements ICheckersFactory {
     @Override
     public Board createBoard() {
-        return new PolishBoard();
+        return new EnglishBoard();
     }
 
     @Override
     public Ruleset createMovement() {
-        return new PolishRuleset();
+        return new EnglishRuleset();
     }
 
     @Override
     public IGameState createState(Checkers checkers) {
         return new WhiteTurn(checkers);
     }
-    
-    
 }

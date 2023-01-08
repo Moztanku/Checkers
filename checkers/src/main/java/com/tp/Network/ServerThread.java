@@ -10,8 +10,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.tp.Checkers;
+import com.tp.GameStates.GameEnded;
 import com.tp.Model.Player;
-
+/**
+ * ServerThread class is responsible for handling the communication with clients.
+ */
 public class ServerThread implements Runnable {
 
     private Socket client = null;
@@ -20,26 +23,27 @@ public class ServerThread implements Runnable {
     private Player player = null;
     private String variant = null;
 
-    public ServerThread(Socket client) throws IOException {
+    /**
+     * Constructor for ServerThread
+     * @param client - client socket
+     */
+    public ServerThread(Socket client){
         System.out.println("Connected: " + client);
 
         this.client = client;
     }
-
     public Player getPlayer(){
         return this.player;
     }
     public void setPlayer(Player player){
         this.player = player;
     }
-
     public String getVariant(){
         return this.variant;
     }
     public void setVariant(String variant){
         this.variant = variant;
     }
-
     public void addOpponent(Socket opponent){
         this.opponents.add(opponent);
     }
@@ -47,6 +51,9 @@ public class ServerThread implements Runnable {
         return this.client;
     }
 
+    /**
+     * Establishes connection with client, and communicates with it.
+     */
     @Override
     public void run() {
         try{
@@ -54,49 +61,55 @@ public class ServerThread implements Runnable {
             var out = client.getOutputStream();
 
             try{
-                WebsocketFrameCoder.handshake(in, out);
+                WebsocketFrameCoder.handshake(in, out); // Perform handshake
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            Gson gson = new GsonBuilder().create();
+            Gson gson = new GsonBuilder().create(); // Create gson object for json parsing
             byte[] bytes = new byte[1024];
-            while((in.read(bytes,0,bytes.length)) != -1){
-                String request = WebsocketFrameCoder.decode(bytes);
-                JsonObject response = processRequest(request, out);
+            while((in.read(bytes,0,bytes.length)) != -1){   // Read messages
+                String request = WebsocketFrameCoder.decode(bytes); // Decode message
+                JsonObject response = processRequest(request); // Process message
 
                 if(response != null){
-                    String responseString = gson.toJson(response);
-                    sendResponse(out, responseString);
+                    String responseString = gson.toJson(response);  // Convert response to json 
+                    sendResponse(out, responseString);  // Send response
                 }
             }
             System.out.println("Closing connection...");
-            client.close();
+            client.close(); // Close connection
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
-    private JsonObject processRequest(String request, OutputStream output) {
+    /**
+     * Process request from client
+     * @param request - request from client
+     * @return - response to client in json format
+     */
+    private JsonObject processRequest(String request) {
         Gson gson = new GsonBuilder().create();
         JsonObject json = null;
         try{
-            json = gson.fromJson(request, JsonObject.class);
+            json = gson.fromJson(request, JsonObject.class);    // Try to parse request
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            System.out.println("Request: " + request);
             return null;
         }
 
-        var requestType = json.get("RequestType").getAsString();
-        var content = json.get("Content").getAsJsonObject();
+        if(json == null){
+            return null;
+        }
+
+        var requestType = json.get("RequestType").getAsString();    // Get request type (SetVariant, SetColor, Move, GetState, GetBoard)
+        var content = json.get("Content").getAsJsonObject();    // Get content of request
 
         if(requestType == null || content == null){
             System.out.println("Error: RequestType or Content is null");
             return null;
         } 
 
-        switch(requestType){
+        switch(requestType){    // Process request based on request type
             case "SetVariant":
                 return SetVariant(content);
             case "SetColor":
@@ -111,7 +124,11 @@ public class ServerThread implements Runnable {
                 return InvalidRequest(new Exception("Invalid request type"));
         }
     }
-
+    /**
+     * Client requests to set variant
+     * @param content - content of request
+     * @return - response to client in json format
+     */
     private JsonObject SetVariant(JsonObject content) {
         try{
             this.variant = content.get("Variant").getAsString();
@@ -120,7 +137,11 @@ public class ServerThread implements Runnable {
             return InvalidRequest(e);
         }
     }
-
+    /**
+     * Client requests to set color
+     * @param content - content of request
+     * @return - response to client in json format
+     */
     private JsonObject SetColor(JsonObject content) {
         try{
             this.player = Player.valueOf(content.get("Color").getAsString().toUpperCase());
@@ -129,7 +150,11 @@ public class ServerThread implements Runnable {
             return InvalidRequest(e);
         }
     }
-
+    /**
+     * Client requests to move
+     * @param content - content of request
+     * @return - response to client in json format
+     */
     private JsonObject Move(JsonObject content) {
         var move = new com.tp.Model.Move(content);
 
@@ -149,20 +174,40 @@ public class ServerThread implements Runnable {
         }
         return GetState();
     }
-
+    /**
+     * Client requests to get game state
+     * @return - response to client in json format
+     */
     private JsonObject GetState() {
         Checkers checkers = Checkers.getInstance();
 
-        var json = new JsonObject();
-        json.addProperty("RequestType", "GetState");
+        if(checkers.getState() == null)
+            return InvalidRequest(new Exception("Game state is null"));
+        if(checkers.getState() instanceof GameEnded){
+            var json = new JsonObject();
+            json.addProperty("RequestType", "GameEnded");
 
-        var content = new JsonObject();
-        content.addProperty("State", checkers.getState().getTurn().toString().toLowerCase());
+            var content = new JsonObject();
+            var winner = ((GameEnded) checkers.getState()).getWinner();
+            content.addProperty("Winner", winner.toString().toLowerCase());
 
-        json.add("Content", content);
-        return json;
+            json.add("Content", content);
+            return json;
+        }else{
+            var json = new JsonObject();
+            json.addProperty("RequestType", "GetState");
+    
+            var content = new JsonObject();
+            content.addProperty("State", checkers.getState().getTurn().toString().toLowerCase());
+    
+            json.add("Content", content);
+            return json;
+        }
     }
-
+    /**
+     * Client requests to get board
+     * @return - response to client in json format
+     */
     private JsonObject GetBoard() {
         Checkers checkers = Checkers.getInstance();
 
@@ -184,11 +229,17 @@ public class ServerThread implements Runnable {
         }
 
         content.add("Pieces", pieces);
+        content.addProperty("Width", checkers.getBoard().getSize());
+        content.addProperty("Height", checkers.getBoard().getSize());
         json.add("Content", content);
 
         return json;
     }
-    
+    /**
+     * Client send invalid request
+     * @param e - exception
+     * @return - response to client in json format with exception
+     */
     private JsonObject InvalidRequest(Exception e) {
         var json = new JsonObject();
         json.addProperty("RequestType", "Exception");
@@ -200,12 +251,21 @@ public class ServerThread implements Runnable {
         json.add("Content", exception);
         return json;
     }
-
+    /**
+     * Send response to client
+     * @param out - output stream
+     * @param response - response to client
+     * @throws IOException - network error
+     */
     private void sendResponse(OutputStream out, String response) throws IOException {
         byte[] responseBytes = WebsocketFrameCoder.encode(response);
         out.write(responseBytes);
     }
-
+    /**
+     * Public method to send response to client
+     * @param message - response to client
+     * @throws IOException - network error
+     */
     public void notify(String message) throws IOException {
         sendResponse(client.getOutputStream(), message);
     }

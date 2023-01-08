@@ -1,7 +1,9 @@
-package com.tp.CheckersVariants.Polish;
+package com.tp.CheckersVariants.Testing;
 
 import com.tp.Checkers;
 import com.tp.ICheckersFactory;
+import com.tp.CheckersVariants.Polish.PolishBoard;
+import com.tp.CheckersVariants.Polish.PolishRuleset;
 import com.tp.GameStates.WhiteTurn;
 import com.tp.Model.Board;
 import com.tp.Model.Ruleset;
@@ -10,11 +12,11 @@ import com.tp.Model.IGameState;
 /**
  * Factory for creating a Polish checkers game
  */
-public class PolishChekersFactory implements ICheckersFactory {
+public class TestCheckersFactory implements ICheckersFactory {
 
     @Override
     public Board createBoard() {
-        return new PolishBoard();
+        return new TestBoard();
     }
 
     @Override

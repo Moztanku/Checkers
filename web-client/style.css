@@ -2,6 +2,32 @@ html{
     overflow: hidden;
 }
 
+body{
+    background-color: #fff;
+}
+
+body.dark{
+    background-color: #121212;
+}
+
+div#dark-mode-toggle{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    background-color: rgba(76, 76, 76, 1);
+    background-image: radial-gradient(circle, rgba(230, 230, 230, 1) 50%, rgb(12, 12, 12, 1) 51%);
+    border-bottom-left-radius: 20px;
+    background-size: auto;
+    background-position: left top;
+    background-repeat: repeat;
+}
+
+div#dark-mode-toggle.dark{
+    background-image: radial-gradient(circle, rgba(220,210,10,1) 50%, rgba(12, 12, 12, 1) 51%);
+}
+
 div#startWindow{
     position: relative;
     width: 76vw;
@@ -39,20 +65,24 @@ table{
     table-layout: auto;
 }
 
-td[color="white"]{
+td{
+    padding: 0;
+}
+
+tr:nth-child(odd) > td:nth-child(odd), tr:nth-child(even) > td:nth-child(even){
     background-color: antiquewhite;
 }
 
-td[color="black"]{
+tr:nth-child(even) > td:nth-child(odd), tr:nth-child(odd) > td:nth-child(even){
     background-color: maroon;
 }
 
-td[state="active"]{
-    background-color: yellow;
+table[variant="Italian"] tr:nth-child(even) > td:nth-child(odd), table[variant="Italian"] tr:nth-child(odd) > td:nth-child(even){
+    background-color: antiquewhite;
 }
 
-td[state="available"]{
-    background-color: green;
+table[variant="Italian"] tr:nth-child(odd) > td:nth-child(odd), table[variant="Italian"] tr:nth-child(even) > td:nth-child(even){
+    background-color: maroon;
 }
 
 td[piece="white"]{
@@ -67,6 +97,14 @@ td[piece="black"]{
     background-size: auto;
     background-position: left top;
     background-repeat: repeat;
+}
+
+td[state="selected"]{
+    background-color: #cccc00 !important;
+}
+
+td[state="available"]{
+    background-color: #22aa33 !important;
 }
 
 div#log{
