@@ -92,11 +92,33 @@ td[piece="white"]{
     background-repeat: repeat;
 }
 
+td[piece="white"][isQueen="true"]{
+    background-image: radial-gradient(
+        circle,
+        rgba(44, 28, 15, 1) 20%,
+        rgba(255,255,255,1) 21%,
+        rgba(255, 255, 255, 1) 44%, 
+        rgba(44, 28, 15, 1) 45%, 
+        rgba(44, 28, 15, 1) 52%, 
+        rgba(252, 164, 89, 0) 53%);
+}
+
 td[piece="black"]{
     background-image: radial-gradient(circle, rgba(34, 34, 34, 1) 44%, rgba(44, 28, 15, 1) 47%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
     background-size: auto;
     background-position: left top;
     background-repeat: repeat;
+}
+
+td[piece="black"][isQueen="true"]{
+    background-image: radial-gradient(
+        circle,
+        rgba(255,255,255,1) 20%,
+        rgba(34,34,34,1) 21%,
+        rgba(34, 34, 34, 1) 44%, 
+        rgba(44, 28, 15, 1) 47%, 
+        rgba(44, 28, 15, 1) 52%, 
+        rgba(252, 164, 89, 0) 53%);
 }
 
 td[state="selected"]{
