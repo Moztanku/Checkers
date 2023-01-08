@@ -72,6 +72,8 @@ public abstract class Ruleset {
             throw new InvalidMoveException("Jump of length 0 not possible");
         }
         Piece moved = new Piece(move.before);
+        if(moved.isQueen)
+            return;
         for(Piece piece : move.jumped){
             int xDiff = piece.X - moved.X;
             int yDiff = piece.Y - moved.Y;
@@ -106,6 +108,13 @@ public abstract class Ruleset {
      * Check if jump is possible for a piece
      */
     private boolean isJumpPossible(Piece piece, Board board){
+        if(!piece.isQueen){
+            if((piece.color == Player.WHITE && piece.Y == board.getSize()-1) ||
+            (piece.color == Player.BLACK && piece.X == 0)){
+                return false;
+            }
+        }
+
         for(int x = -1; x <= 1; x += 2){
             for(int y = -1; y <= 1; y += 2){
                 int diagonal = 1;
@@ -141,8 +150,10 @@ public abstract class Ruleset {
                 maxJumpLength = jumpLength;
             }
         }
-        if(maxJumpLength != move.jumped.length){
-            throw new InvalidMoveException("Max jump required");
+        if(maxJumpLength > move.jumped.length){
+            throw new InvalidMoveException("Longer jump possible");
+        } else if(maxJumpLength < move.jumped.length){
+            throw new InvalidMoveException("Jump not possible");
         }
     }
     /**
@@ -213,14 +224,13 @@ public abstract class Ruleset {
             if(move.before.color == Player.BLACK && move.before.Y - move.after.Y != 1){
                 throw new InvalidMoveException("Move back not possible");
             }
-        } else{
-            if(Math.abs(move.before.Y - move.after.Y) != 1){
+            if(Math.abs(move.before.Y - move.after.Y) != 1 || Math.abs(move.before.X - move.after.X) != 1){
                 throw new InvalidMoveException("Move longer than 1 not possible");
             }
-        }
-
-        if(Math.abs(move.before.X - move.after.X) != 1){
-            throw new InvalidMoveException("Move longer than 1 not possible");
+        } else{
+            if(Math.abs(move.before.Y - move.after.Y) != Math.abs(move.before.X - move.after.X)){
+                throw new InvalidMoveException("Move not diagonal not possible");
+            }
         }
     }
 }

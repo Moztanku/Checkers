@@ -44,6 +44,11 @@ namespace connection{
                     const state = content.State;
                     game.updateState(state);
                     break;
+                case "GameEnded":
+                    html.log("Game ended");
+                    html.log("Winner: " + content.Winner);
+                    socket.close();
+                    break;
                 case "Exception":
                     html.log(content.Message);
                     console.log(content.StackTrace);

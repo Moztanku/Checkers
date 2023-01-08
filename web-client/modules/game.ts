@@ -92,24 +92,31 @@ namespace game{
         const px = selectedPiece[0];
         const py = selectedPiece[1];
 
-        const dx = x - px;
-        const dy = y - py;
+        const dx = x - px;  const dxx = dx > 0 ? 1 : -1;
+        const dy = y - py;  const dyy = dy > 0 ? 1 : -1;
 
-        const isJump : boolean = Math.abs(dx) === 2 && Math.abs(dy) === 2;
+        let isJump : boolean = false;
+        if(Math.abs(dx) > 1 && Math.abs(dy) > 1){
+            if(board.getPiece(x-dxx,y-dyy) !== null)
+                isJump = true;
+        }
+
+        console.log("Making move: ",px,py,dx,dy,dxx,dyy,isJump);
+        const wasQueen : boolean = board.getPiece(selectedPiece[0],selectedPiece[1]).isQueen;
         const isQueen : boolean = board.getPiece(selectedPiece[0],selectedPiece[1]).isQueen?true:
             (PlayerColor === "white" && y === board.height - 1) || (PlayerColor === "black" && y === 0);
 
         if(move === null){
             move = new Move(
-                new Piece(px,py,PlayerColor,isQueen),
+                new Piece(px,py,PlayerColor,wasQueen),
                 new Piece(x,y,PlayerColor,isQueen),
                 isJump,
                 []
             );
 
             if(isJump){
-                const mx = selectedPiece[0] + dx/2;
-                const my = selectedPiece[1] + dy/2;
+                const mx = px + dx - dxx;
+                const my = py + dy - dyy;
                 const jumped = board.getPiece(mx,my);
                 move.jumpedPieces.push(jumped);
             }
@@ -117,15 +124,15 @@ namespace game{
             move.end.x = x;
             move.end.y = y;
 
-            const mx = selectedPiece[0] + dx/2;
-            const my = selectedPiece[1] + dy/2;
+            const mx = px + dx - dxx;
+            const my = py + dy - dyy;
             const jumped = board.getPiece(mx,my);
             move.jumpedPieces.push(jumped);
         }
 
         board.removePiece(px,py);
         if(isJump)
-            board.removePiece(px + dx/2,py + dy/2);
+            board.removePiece(px + dx - dxx, py + dy - dyy);
         board.addPiece(new Piece(x,y,PlayerColor,isQueen));
     }
 

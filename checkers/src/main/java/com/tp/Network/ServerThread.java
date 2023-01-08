@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.tp.Checkers;
+import com.tp.GameStates.GameEnded;
 import com.tp.Model.Player;
 /**
  * ServerThread class is responsible for handling the communication with clients.
@@ -93,8 +94,10 @@ public class ServerThread implements Runnable {
         try{
             json = gson.fromJson(request, JsonObject.class);    // Try to parse request
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
-            System.out.println("Request: " + request);
+            return null;
+        }
+
+        if(json == null){
             return null;
         }
 
@@ -178,14 +181,28 @@ public class ServerThread implements Runnable {
     private JsonObject GetState() {
         Checkers checkers = Checkers.getInstance();
 
-        var json = new JsonObject();
-        json.addProperty("RequestType", "GetState");
+        if(checkers.getState() == null)
+            return InvalidRequest(new Exception("Game state is null"));
+        if(checkers.getState() instanceof GameEnded){
+            var json = new JsonObject();
+            json.addProperty("RequestType", "GameEnded");
 
-        var content = new JsonObject();
-        content.addProperty("State", checkers.getState().getTurn().toString().toLowerCase());
+            var content = new JsonObject();
+            var winner = ((GameEnded) checkers.getState()).getWinner();
+            content.addProperty("Winner", winner.toString().toLowerCase());
 
-        json.add("Content", content);
-        return json;
+            json.add("Content", content);
+            return json;
+        }else{
+            var json = new JsonObject();
+            json.addProperty("RequestType", "GetState");
+    
+            var content = new JsonObject();
+            content.addProperty("State", checkers.getState().getTurn().toString().toLowerCase());
+    
+            json.add("Content", content);
+            return json;
+        }
     }
     /**
      * Client requests to get board

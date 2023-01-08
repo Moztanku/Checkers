@@ -20,7 +20,7 @@ public class GameEnded implements IGameState {
 
     @Override
     public Player getTurn() {
-        return null;
+        return this.winner;
     }
 
     @Override

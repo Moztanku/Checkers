@@ -23,15 +23,15 @@ public class PolishRulesetTest extends CheckersTest {
         Board board = checkers.getBoard();
 
         for(int x = 0; x < 10; x+=2){
-            assertPiece(board.getPiece(x, 0), x, 0, Player.WHITE);
-            assertPiece(board.getPiece(x+1, 1), x+1, 1, Player.WHITE);
-            assertPiece(board.getPiece(x, 2), x, 2, Player.WHITE);
-            assertPiece(board.getPiece(x+1, 3), x+1, 3, Player.WHITE);
+            assertPiece(board.getPiece(x+1, 0), x+1, 0, Player.WHITE);
+            assertPiece(board.getPiece(x, 1), x, 1, Player.WHITE);
+            assertPiece(board.getPiece(x+1, 2), x+1, 2, Player.WHITE);
+            assertPiece(board.getPiece(x, 3), x, 3, Player.WHITE);
 
-            assertPiece(board.getPiece(x, 6), x, 6, Player.BLACK);
-            assertPiece(board.getPiece(x+1, 7), x+1, 7, Player.BLACK);
-            assertPiece(board.getPiece(x, 8), x, 8, Player.BLACK);
-            assertPiece(board.getPiece(x+1, 9), x+1, 9, Player.BLACK);
+            assertPiece(board.getPiece(x+1, 6), x+1, 6, Player.BLACK);
+            assertPiece(board.getPiece(x, 7), x, 7, Player.BLACK);
+            assertPiece(board.getPiece(x+1, 8), x+1, 8, Player.BLACK);
+            assertPiece(board.getPiece(x, 9), x, 9, Player.BLACK);
         }
 
         assertEquals(board.getPieces().size(), 40);
@@ -50,8 +50,8 @@ public class PolishRulesetTest extends CheckersTest {
 
         try{
             Move move = new Move(
-                board.getPiece(1, 3),
-                new Piece(0, 4, Player.WHITE)
+                board.getPiece(0, 3),
+                new Piece(1, 4, Player.WHITE)
             );
             checkers.move(
                 move, Player.WHITE
@@ -59,17 +59,17 @@ public class PolishRulesetTest extends CheckersTest {
 
             checkers.move(
                 new Move(
-                    board.getPiece(2, 6),
-                    new Piece(1, 5, Player.BLACK)
+                    board.getPiece(3, 6),
+                    new Piece(2, 5, Player.BLACK)
                 ), Player.BLACK
             );
 
             checkers.move(
                 new Move(
-                    board.getPiece(0, 4),
-                    new Piece(2, 6, Player.WHITE),
+                    board.getPiece(1, 4),
+                    new Piece(3, 6, Player.WHITE),
                     true,
-                    new Piece[] { board.getPiece(1, 5) }
+                    new Piece[] { board.getPiece(2, 5) }
                 ), Player.WHITE
             );
         } catch(Exception e){
@@ -77,7 +77,7 @@ public class PolishRulesetTest extends CheckersTest {
         }
 
         assertEquals(20,board.getPieceCount(Player.WHITE));
-        // assertEquals( 19,board.getPieceCount(Player.BLACK));
+        assertEquals( 19,board.getPieceCount(Player.BLACK));
     }
 
     @Test
@@ -86,7 +86,7 @@ public class PolishRulesetTest extends CheckersTest {
         Board board = checkers.getBoard();
 
         try{
-            Move move = new Move(board.getPiece(0, 0), new Piece(-1,-1,Player.WHITE));
+            Move move = new Move(board.getPiece(1, 0), new Piece(0,-1,Player.WHITE));
             checkers.move(move,Player.WHITE);
         } catch(InvalidMoveException e){
             assertEquals("Move out of bounds", e.getMessage());
@@ -98,20 +98,21 @@ public class PolishRulesetTest extends CheckersTest {
             assertEquals("Move out of bounds", e.getMessage());
         }
         try{
-            Move move = new Move(board.getPiece(1,3), new Piece(0,4,Player.WHITE));
+            Move move = new Move(board.getPiece(0,3), new Piece(1,4,Player.WHITE));
             checkers.move(move,Player.WHITE);
         } catch(InvalidMoveException e){
             assertEquals(null, e);
         }
         try{
-            Move move = new Move(board.getPiece(1, 9), new Piece(0,10,Player.BLACK));
+            Move move = new Move(board.getPiece(0, 9), new Piece(1,10,Player.BLACK));
             checkers.move(move,Player.BLACK);
         } catch(InvalidMoveException e){
             assertEquals("Move out of bounds", e.getMessage());
         }
-        makeMove(board, 8, 6, 9, 5);
-        makeMove(board, 9, 3, 8, 4);
-        makeMove(board, 8, 8, 0, 0);
+        emptyBoard(board);
+        addPiece(board, new Piece(8, 4, Player.WHITE));
+        addPiece(board, new Piece(9, 5, Player.BLACK));
+        addPiece(board, new Piece(9, 7, Player.BLACK));
         checkers.getState().nextTurn();
         try{
             Move move = new Move(
@@ -133,10 +134,10 @@ public class PolishRulesetTest extends CheckersTest {
 
         try{
             Move move = new Move(
-                board.getPiece(0,2),
-                new Piece(2,4,Player.WHITE),
+                board.getPiece(1,2),
+                new Piece(3,4,Player.WHITE),
                 true,
-                new Piece[] { board.getPiece(1,3) }
+                new Piece[] { board.getPiece(2,3) }
             );
             checkers.move(move,Player.WHITE);
         } catch(InvalidMoveException e){
@@ -151,8 +152,8 @@ public class PolishRulesetTest extends CheckersTest {
 
         try{
             Move move = new Move(
-                board.getPiece(0,2),
-                new Piece(1,3,Player.WHITE)
+                board.getPiece(1,2),
+                new Piece(2,3,Player.WHITE)
             );
             checkers.move(move,Player.WHITE);
         } catch(InvalidMoveException e){
@@ -167,8 +168,8 @@ public class PolishRulesetTest extends CheckersTest {
 
         try{
             Move move = new Move(
-                board.getPiece(1,3),
-                new Piece(3,5,Player.WHITE),
+                board.getPiece(2,3),
+                new Piece(4,5,Player.WHITE),
                 true,
                 new Piece[] { new Piece(2,4,Player.BLACK) }
             );
@@ -213,7 +214,7 @@ public class PolishRulesetTest extends CheckersTest {
 
             checkers.move(move, Player.WHITE);
         } catch (InvalidMoveException e){
-            assertEquals("Max jump required", e.getMessage());
+            assertEquals("Longer jump possible", e.getMessage());
         }
 
         try{
@@ -259,11 +260,113 @@ public class PolishRulesetTest extends CheckersTest {
 
     @Test
     public void testPromotion(){
-        /* TODO */
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
+
+        emptyBoard(board);
+        assertEquals(0, board.getPieces().size());
+
+        addPiece(board, new Piece(4, 7, Player.WHITE));
+        addPiece(board, new Piece(5, 8, Player.BLACK)); // 6,9
+        addPiece(board, new Piece(7, 8, Player.BLACK));
+
+        try{
+            Move move = new Move(
+                board.getPiece(4,7),
+                new Piece(6,7,Player.WHITE),
+                true,
+                new Piece[] { board.getPiece(5,8), board.getPiece(7,8) }
+            );
+            checkers.move(move, Player.WHITE);
+        } catch (Exception e){
+            assertEquals("Jump not possible", e.getMessage());
+        }
     }
 
     @Test
-    public void testInvalidMove(){
-        /* TODO */
+    public void testQueenMove(){
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
+
+        emptyBoard(board);
+        assertEquals(0, board.getPieces().size());
+
+        addPiece(board, new Piece(1, 1, true, Player.WHITE));
+        addPiece(board, new Piece(5, 3, true, Player.BLACK));
+
+        try{
+            Move move = new Move(
+                board.getPiece(1, 1),
+                new Piece(8, 8, true, Player.WHITE)
+            );
+            checkers.move(move, Player.WHITE);
+
+            move = new Move(
+                board.getPiece(5, 3),
+                new Piece(2, 0, true, Player.BLACK)
+            );
+            checkers.move(move, Player.BLACK);
+        } catch (Exception e){
+            assertEquals(null, e);
+        }
+    }
+
+    @Test
+    public void testCloning(){
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
+        emptyBoard(board);
+
+        addPiece(board, new Piece(1, 8, false, Player.WHITE));
+        addPiece(board, new Piece(5, 4, false, Player.BLACK));
+
+        try{
+            Move move = new Move(
+                board.getPiece(1, 8),
+                new Piece(0, 9, true, Player.WHITE)
+            );
+            checkers.move(move, Player.WHITE);
+        } catch(Exception e){
+            assertEquals(null, e);
+        }
+
+        boolean exception = false;
+        try{
+            Piece piece = board.getPiece(0, 9);
+            Player c = board.getPiece(1, 8).color;
+        } catch(Exception e){
+            exception = true;
+        }
+
+        assertEquals(true, exception);
+    }
+
+    @Test
+    public void testLongerJumpPossible(){
+        Checkers checkers = getPolishCheckers();
+        Board board = checkers.getBoard();
+        emptyBoard(board);
+
+        addPiece(board, new Piece(0,9,true,Player.WHITE));
+        addPiece(board, new Piece(0,1,true,Player.BLACK));
+        addPiece(board, new Piece(4,3,true,Player.BLACK));
+        
+        try{
+            Move move = new Move(
+                board.getPiece(0,9),
+                new Piece(5,4,true,Player.WHITE)
+            );
+            checkers.move(move, Player.WHITE);
+
+            move = new Move(
+                board.getPiece(4,3),
+                new Piece(6,5,false,Player.BLACK),
+                true,
+                new Piece[] { board.getPiece(5,4) }
+            );
+            checkers.move(move, Player.BLACK);
+        } catch(Exception e){
+            assertEquals(null, e);
+        }
     }
 }

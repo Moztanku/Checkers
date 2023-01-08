@@ -12,6 +12,7 @@ import com.google.gson.JsonObject;
 import com.tp.CheckersVariants.English.EnglishCheckersFactory;
 import com.tp.CheckersVariants.Italian.ItalianCheckersFactory;
 import com.tp.CheckersVariants.Polish.PolishChekersFactory;
+import com.tp.CheckersVariants.Testing.TestCheckersFactory;
 import com.tp.GameStates.GameEnded;
 import com.tp.Network.ServerThread;
 
@@ -110,6 +111,8 @@ public class Server {
         System.out.println("Winner: " + ((GameEnded)checkers.getState()).getWinner());
 
         serverSocket.close();   // close server socket
+
+        pool.shutdown();    // shutdown thread pool
     }
 
     /**
@@ -146,6 +149,7 @@ public class Server {
     static private Map<String, ICheckersFactory> variants = new HashMap<String, ICheckersFactory>(){
         {
             put("Polish", new PolishChekersFactory());
+            // put("Polish", new TestCheckersFactory());
             put("English", new EnglishCheckersFactory());
             put("Italian", new ItalianCheckersFactory());
         }

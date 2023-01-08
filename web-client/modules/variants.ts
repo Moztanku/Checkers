@@ -17,21 +17,37 @@ namespace variants {
             let moves : [number,number][] = [];
             const enemyColor = PlayerColor === "white" ? "black" : "white";
 
-            if(move !== null && (move.end.x !== px || move.end.y !== py || !move.isJump)){
-                return moves;
+            if(move !== null){
+                if(move.end.x !== px || move.end.y !== py || !move.isJump)
+                    return moves;
+                else if(move.start.isQueen === false && move.end.isQueen === true)
+                    return moves;
             }
-
-            for(let x = px-1; x<=px+1; x+=2)
-                for(let y = py-1; y<=py+1; y+=2)
-                    if(board.getPiece(x,y)?.color === enemyColor){
-                        let dx = x-px;  let dy = y-py;
-                        if(board.getPiece(x+dx,y+dy) === null){
-                            if(x+dx < 0 || x+dx >= board.width || y+dy < 0 || y+dy >= board.height)
-                                continue;
-                            jumpAvailable = true;
-                            moves.push([x+dx,y+dy]);
+            const piece = board.getPiece(px,py);
+            for(let x = -1; x <= 1; x += 2)
+                for(let y = -1; y <= 1; y += 2){
+                    let diagonal = 1;
+                    do{
+                        if(board.getPiece(px+diagonal*x,py+diagonal*y) === null){
+                            diagonal++;
+                            continue;
                         }
-                    }
+                        if(board.getPiece(px+diagonal*x,py+diagonal*y)?.color === PlayerColor)
+                            break;
+                        if(board.getPiece(px+diagonal*x,py+diagonal*y).color === enemyColor){
+                            if(board.getPiece(px+(diagonal+1)*x,py+(diagonal+1)*y) === null){
+                                if(px+(diagonal+1)*x < 0 || px+(diagonal+1)*x >= board.width || py+(diagonal+1)*y < 0 || py+(diagonal+1)*y >= board.height)
+                                    break;
+                                console.log("Moves:",moves);
+                                jumpAvailable = true;    
+                                moves.push([px+(diagonal+1)*x,py+(diagonal+1)*y]);
+                            }
+                            break;
+                        }
+                    } while( piece.isQueen && px+(diagonal+1)*x < board.width &&
+                            px+(diagonal+1)*x >= 0 && py+(diagonal+1)*y < board.height &&
+                            py+(diagonal+1)*y >= 0 );
+                }
             return moves;
         }],
         ["English", (px: number, py: number) => {
@@ -61,6 +77,25 @@ namespace variants {
         ["Italian", (px: number, py: number) => {
             let moves : [number, number][] = [];
 
+            if(move !== null && (move.end.x !== px || move.end.y !== py || !move.isJump)){
+                return moves;
+            }
+
+            for(let x = px-1; x <= px+1; x+=2)
+                for(let y = py-1; y <= py+1; y+=2){
+                    if(board.getPiece(x,y) === null || board.getPiece(x,y).color === PlayerColor)
+                        continue;
+                    if(board.getPiece(px,py)?.isQueen || PlayerColor === "white" && y > py || PlayerColor === "black" && y < py){
+                        let dx = x-px;  let dy = y-py;
+                        if(board.getPiece(x+dx,y+dy) === null){
+                            if(x+dx < 0 || x+dx >= board.width || y+dy < 0 || y+dy >= board.height)
+                                continue;
+                            jumpAvailable = true;
+                            moves.push([x+dx,y+dy]);
+                        }
+                    }
+                }
+
             return moves;
         }]
     ]);
@@ -73,14 +108,24 @@ namespace variants {
             if(jumpAvailable || move !== null)
                 return moves;
 
-            for(let x = px-1; x<=px+1; x+=2)
-                for(let y = py-1; y<=py+1; y+=2)
-                    if(board.getPiece(x,y) === null && (y === py+dy || board.getPiece(px,py)?.isQueen)){
-                        if(x >= board.width || x < 0 || y >= board.height || y < 0)
-                            continue;
-                        else
-                            moves.push([x,y]);
-                    }
+            const piece = board.getPiece(px,py);
+            for(let x = -1; x <= 1; x += 2)
+                for(let y = -1; y <= 1; y += 2){
+                    if(piece.isQueen === false && y !== dy)
+                        continue;
+                    let diagonal = 1;
+                    do{
+                        if(board.getPiece(px+diagonal*x,py+diagonal*y) !== null)
+                            break;
+                        if(px+diagonal*x < 0 || px+diagonal*x >= board.width || py+diagonal*y < 0 || py+diagonal*y >= board.height)
+                            break;
+                        moves.push([px+diagonal*x,py+diagonal*y]);
+                        diagonal++;
+                    } while( piece.isQueen && px+diagonal*x < board.width &&
+                            px+diagonal*x >= 0 && py+diagonal*y < board.height &&
+                            py+diagonal*y >= 0);
+                }
+            console.log(px,py,"Moves:",moves);
             return moves;
         }],
         ["English", (px: number, py: number) => {
@@ -102,6 +147,18 @@ namespace variants {
         }],
         ["Italian", (px: number, py: number) => {
             let moves : [number, number][] = [];
+
+            if(jumpAvailable || move !== null)
+                return moves;
+
+            for(let x = px-1; x <= px+1; x+=2)
+                for(let y = py-1; y <= py+1; y+=2){
+                    if(board.getPiece(x,y) !== null || x >= board.width || x < 0 || y >= board.height || y < 0)
+                        continue;
+                    if(board.getPiece(px,py)?.isQueen || PlayerColor === "white" && y > py || PlayerColor === "black" && y < py){
+                        moves.push([x,y]);
+                    }
+                }
 
             return moves;
         }]

@@ -85,14 +85,6 @@ table[variant="Italian"] tr:nth-child(odd) > td:nth-child(odd), table[variant="I
     background-color: maroon;
 }
 
-td[state="active"]{
-    background-color: yellow;
-}
-
-td[state="available"]{
-    background-color: green;
-}
-
 td[piece="white"]{
     background-image: radial-gradient(circle, rgba(255, 255, 255, 1) 44%, rgba(44, 28, 15, 1) 45%, rgba(44, 28, 15, 1) 52%, rgba(252, 164, 89, 0) 53%),  url();
     background-size: auto;
@@ -105,6 +97,14 @@ td[piece="black"]{
     background-size: auto;
     background-position: left top;
     background-repeat: repeat;
+}
+
+td[state="selected"]{
+    background-color: #cccc00 !important;
+}
+
+td[state="available"]{
+    background-color: #22aa33 !important;
 }
 
 div#log{
