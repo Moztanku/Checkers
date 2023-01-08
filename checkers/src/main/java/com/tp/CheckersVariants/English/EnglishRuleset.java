@@ -54,5 +54,38 @@ public class EnglishRuleset extends Ruleset {
     protected void requiredMaxJumpCheck(Move move, Board board) throws InvalidMoveException {
         return;
     }
+
+    @Override
+    protected void jumpPossibleCheck(Move move, Board board) throws InvalidMoveException{
+        if(!move.isJump){
+            return;
+        }
+        if(move.jumped.length == 0){
+            throw new InvalidMoveException("Jump of length 0 not possible");
+        }
+        Piece moved = new Piece(move.before);
+        if(moved.isQueen)
+            return;
+        for(Piece piece : move.jumped){
+            int dy = moved.color == Player.WHITE ? 1 : -1;
+            int xDiff = piece.X - moved.X;
+            int yDiff = piece.Y - moved.Y;
+            if(yDiff != dy){
+                throw new InvalidMoveException("Jump backwards not possible");
+            }
+            if(!moved.isQueen && (Math.abs(xDiff) != 1 || Math.abs(yDiff) != 1)){
+                throw new InvalidMoveException("Jump longer than 1 not possible");
+            }
+            moved.X += 2*xDiff;
+            moved.Y += 2*yDiff;
+            insideBoundsCheck(moved.X, moved.Y, board.getSize());
+            if(board.getPiece(moved.X, moved.Y) != null){
+                throw new InvalidMoveException("Jump to occupied space not possible");
+            }
+        }
+        if(moved.X != move.after.X || moved.Y != move.after.Y){
+            throw new InvalidMoveException("Jump not possible");
+        }
+    }
 }
 
